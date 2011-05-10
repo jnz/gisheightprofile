@@ -3,3 +3,23 @@ GIS Height Profile Tool
 
 Welcome to the GIS Height Profile Tool
 
+Setup
+-----
+
+Get the github files:
+
+    git clone git@github.com:jnz/gisheightprofile.git
+    (this will create the gisheightprofile)
+
+Extract the following files to your project directory:
+
+    GeoExt-1.0.zip        > gisheightprofile/GeoExt
+    OpenLayers-2.10.zip   > gisheightprofile/OpenLayers
+    ext-3.3.1.zip         > gisheightprofile/ext-3.3.1
+    ext-4.0.0-gpl.zip     > gisheightprofile/ext-4.0.0
+
+Copy jQuery to the project directory:
+
+    jquery-1.6.js         > gisheightprofile/jquery-1.6.js
+
+
