@@ -8,6 +8,19 @@ Coding style
 
 Use UTF-8 encoded files.
 Use UNIX line breaks.
+Use 4 spaces as TAB.
+Braces are in the same line as control statements.
+If in doubt, use: www.jsbeautifier.org
+
+Describe every function with the following template:
+/**
+ * function: getHeight(Latituge lat, Longitude lon, ...)
+ * description: Function gets height out of...
+ * parameters:
+ * -	lat:	given Latitude from Marker
+ * - 	lon:	given Longitude from Marker
+ * return:	Number height: height gets calculated from input coordinates.
+ */
 
 Setup
 -----
