@@ -38,9 +38,9 @@ Ext.onReady(function () {
         title: "Elevation Profile",
         layout: 'border',
         renderTo: 'gxmap',
+        //autoHeight: true,
+        //autoWidth: true,
         height: 600,
-        autoHeight: true,
-        //width: 800,
         tbar: new Ext.Toolbar({
             items: [{
                 text: 'func1',
@@ -65,7 +65,6 @@ Ext.onReady(function () {
             }
         }
     });
-
 
     var area = new OpenLayers.Control.Measure(OpenLayers.Handler.Polygon, {
         eventListeners: {
