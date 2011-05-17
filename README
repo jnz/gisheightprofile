@@ -1,34 +1,19 @@
 GIS Height Profile Tool
 -----------------------
 
-Welcome to the GIS Height Profile Tool
+Welcome to the GIS Height Profile Tool.
+This is a browser based (JavaScript) GIS elevation profile tool. The user can
+draw a path on a map and the software creates a plot of the height along this
+path. Height is in this context the distance to the mean sea level and provided
+with only a meter accuracy and precision.
 
-Coding style
-------------
-
-Use UTF-8 encoded files.
-Use UNIX line breaks.
-Use 4 spaces as TAB.
-Braces are in the same line as control statements.
-If in doubt, use: www.jsbeautifier.org
-
-Describe every function with the following template:
-/**
- * function: getHeight(Latituge lat, Longitude lon, ...)
- * description: Function gets height out of...
- * parameters:
- * -	lat:	given Latitude from Marker
- * - 	lon:	given Longitude from Marker
- * return:	Number height: height gets calculated from input coordinates.
- */
-
-Setup
------
+Developer setup
+---------------
 
 Get the github files:
 
     git clone git@github.com:jnz/gisheightprofile.git
-    (this will create the gisheightprofile)
+    (this will create the gisheightprofile directory)
 
 Extract the following files to your project directory:
 
@@ -41,4 +26,23 @@ Copy jQuery to the project directory:
 
     jquery-1.6.js         > gisheightprofile/jquery-1.6.js
 
+Coding style
+------------
+
+Use utf-8 encoded files.
+Use UNIX line breaks.
+Use 4 spaces as TAB.
+Braces are in the same line as control statements.
+Use camel case naming and avoid underscores.
+If in doubt, use: www.jsbeautifier.org
+
+Describe every function with the following template:
+/**
+ * function: getHeight(Latitude lat, Longitude lon, ...)
+ * description: Function gets height out of...
+ * parameters:
+ * -	lat:	given latitude from marker
+ * - 	lon:	given longitude from marker
+ * return:	Number height: height gets calculated from input coordinates.
+ */
 
