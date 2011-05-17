@@ -2,11 +2,11 @@
  * function: azimuthApprox(latStart, lonStart, latEnd, lonEnd)
  * description: Calculate estimated azimuth between two points
  * parameters:
- * -	latStart:	latitude of starting point [rad]
- * -	lonStart:	longitude of starting point [rad]
- * -	latEnd:	    latitude of end point [rad]
- * -	lonEnd:	    longitude of end point [rad]
- * return:	Number azimuth: approximated azimuth
+ * -    latStart:   latitude of starting point [rad]
+ * -    lonStart:   longitude of starting point [rad]
+ * -    latEnd:     latitude of end point [rad]
+ * -    lonEnd:     longitude of end point [rad]
+ * return:  Number azimuth: approximated azimuth
  */
 function azimuthString(latStart, lonStart, latEnd, lonEnd)
 {
@@ -21,11 +21,11 @@ function azimuthString(latStart, lonStart, latEnd, lonEnd)
  * description: Calculate estimated azimuth between two points.
  * Warning: This is not a strict geodetic calculation.
  * parameters:
- * -	latStart:	latitude of starting point [rad]
- * -	lonStart:	longitude of starting point [rad]
- * -	latEnd:	    latitude of end point [rad]
- * -	lonEnd:	    longitude of end point [rad]
- * return:	Number azimuth: approximated azimuth
+ * -    latStart:   latitude of starting point [rad]
+ * -    lonStart:   longitude of starting point [rad]
+ * -    latEnd:     latitude of end point [rad]
+ * -    lonEnd:     longitude of end point [rad]
+ * return:  Number azimuth: approximated azimuth
  */
 function azimuthApprox(latStart, lonStart, latEnd, lonEnd)
 {
