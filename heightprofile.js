@@ -48,7 +48,22 @@ Ext.onReady(function () {
         renderTo: 'gxmap',
         //autoWidth: true,
         height: 600,
-        items: [mapPanel]
+        items: [mapPanel],
+        /*
+         *tbar: new Ext.Toolbar({
+         *    items: [{
+         *        text: 'func1',
+         *        handler: function () {
+         *            alert('func1');
+         *        }
+         *    }, {
+         *        text: 'func2',
+         *        handler: function () {
+         *            alert('func2');
+         *        }
+         *    }, ]
+         *}),
+         */
     });
 
     //just a litte test (Paul)
