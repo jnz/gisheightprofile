@@ -1,18 +1,31 @@
 /**
- * function: azimuthApprox(latStart, lonStart, latEnd, lonEnd)
- * description: Calculate estimated azimuth between two points
+ * function: directionString(latStart, lonStart, latEnd, lonEnd)
+ * description: direction string "N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"
  * parameters:
  * -    latStart:   latitude of starting point [rad]
  * -    lonStart:   longitude of starting point [rad]
  * -    latEnd:     latitude of end point [rad]
  * -    lonEnd:     longitude of end point [rad]
- * return:  Number azimuth: approximated azimuth
+ * return:  String: String from azimuth:  "N", "NE", "E", "SE", "S", "SW", "W",
+ * "NW", "N"
  */
-function azimuthString(latStart, lonStart, latEnd, lonEnd)
+function directionString(latStart, lonStart, latEnd, lonEnd)
+{
+    var azimuth = azimuthApprox(latStart, lonStart, latEnd, lonEnd);
+    return azimuthStringFromAzimuth(azimuth);
+}
+
+/**
+ * function: directionStringFromAzimuth(azimuth)
+ * description: direction string "N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"
+ * parameters:
+ * -    azimuth:    azimuth [rad]
+ * return:  String
+ */
+function directionStringFromAzimuth(azimuth)
 {
     var azStrTable = [ "N", "NE", "E", "SE", "S", "SW", "W", "NW", "N" ];
-    var az = azimuthApprox(latStart, lonStart, latEnd, lonEnd);
-    var index = Math.round(8*az/(Math.PI*2));
+    var index = Math.round(8*azimuth/(Math.PI*2));
     return azStrTable[index];
 }
 
