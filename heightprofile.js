@@ -3,17 +3,18 @@ var mapPanel;
 Ext.onReady(function () {
     var map = new OpenLayers.Map();
 
-    var gmap = new OpenLayers.Layer.Google("Google Streets",
-                                           { numZoomLevels: 20 });
-    var gphy = new OpenLayers.Layer.Google("Google Physical",
-                                           { type: google.maps.MapTypeId.TERRAIN });
+    var gmap = new OpenLayers.Layer.Google("Google Streets", {
+        numZoomLevels: 20
+    });
+    var gphy = new OpenLayers.Layer.Google("Google Physical", {
+        type: google.maps.MapTypeId.TERRAIN
+    });
     var osm = new OpenLayers.Layer.OSM();
-    var ghyb = new OpenLayers.Layer.Google("Google Hybrid",
-        {
-            type: google.maps.MapTypeId.HYBRID,
-            numZoomLevels: 20
-        }
-        // used to be {type: G_HYBRID_MAP, numZoomLevels: 20}
+    var ghyb = new OpenLayers.Layer.Google("Google Hybrid", {
+        type: google.maps.MapTypeId.HYBRID,
+        numZoomLevels: 20
+    }
+    // used to be {type: G_HYBRID_MAP, numZoomLevels: 20}
     );
     var gsat = new OpenLayers.Layer.Google("Google Satellite", {
         type: google.maps.MapTypeId.SATELLITE,
@@ -50,6 +51,21 @@ Ext.onReady(function () {
         height: 600,
         items: [mapPanel],
     });
+
+    var elevationButton = new Ext.Button({
+        text: 'show Chart-Window',
+        id: 'elevationBtn',
+        enableToggle: true,
+        toggleHandler: function toggleHandler(item, pressed) {
+            //Ext.Msg.alert('toggleHandler', 'toggle pressed');
+            if (pressed) {
+                window.createProfileWindow(50, 50, 600, 300);
+            } else {
+                window.closeProfileWindow();
+            }
+        }
+    })
+    mapPanel.getTopToolbar().addButton(elevationButton);
 
     // Profile draw tool
     initProfileTool(mapPanel);
@@ -167,4 +183,3 @@ function onProfilePathComplete(evt)
     // total length:
     // var geodesicLength = evt.geometry.getGeodesicLength(); // projected length in meter
 }
-
