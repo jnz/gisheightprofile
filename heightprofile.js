@@ -31,29 +31,23 @@ Ext.onReady(function () {
         zoom: 6,
         tbar: new Ext.Toolbar(),
         center: new OpenLayers.LonLat(11.019287, 51.041394).transform(
-        new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject())
+        new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()),
+        items: [{
+             xtype: "gx_zoomslider",
+             vertical: true,
+             height: 100,
+             x: 15,
+             y: 150,
+             plugins: new GeoExt.ZoomSliderTip()
+        }],
     });
 
     new Ext.Panel({
         title: "Elevation Profile",
-        layout: 'border',
+        layout: 'fit',
         renderTo: 'gxmap',
-        //autoHeight: true,
         //autoWidth: true,
         height: 600,
-        tbar: new Ext.Toolbar({
-            items: [{
-                text: 'func1',
-                handler: function () {
-                    alert('func1');
-                }
-            }, {
-                text: 'func2',
-                handler: function () {
-                    alert('func2');
-                }
-            }, ]
-        }),
         items: [mapPanel]
     });
 
