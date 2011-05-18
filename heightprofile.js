@@ -41,20 +41,22 @@ Ext.onReady(function () {
         //autoHeight: true,
         //autoWidth: true,
         height: 600,
-        tbar: new Ext.Toolbar({
-            items: [{
-                text: 'func1',
-                handler: function () {
-                    alert('func1');
-                }
-            }, {
-                text: 'func2',
-                handler: function () {
-                    alert('func2');
-                }
-            }, ]
-        }),
-        items: [mapPanel]
+        /*
+         *tbar: new Ext.Toolbar({
+         *    items: [{
+         *        text: 'func1',
+         *        handler: function () {
+         *            alert('func1');
+         *        }
+         *    }, {
+         *        text: 'func2',
+         *        handler: function () {
+         *            alert('func2');
+         *        }
+         *    }, ]
+         *}),
+         */
+        items: [mapPanel],
     });
 
     //just a litte test (Paul)
