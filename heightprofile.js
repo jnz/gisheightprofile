@@ -123,7 +123,7 @@ Ext.onReady(function () {
         toggleHandler: function toggleHandler(item, pressed) {
             //Ext.Msg.alert('toggleHandler', 'toggle pressed');
             if (pressed) {
-                window.createProfileWindow(50, 50, 600, 300);
+                window.createProfileWindow();
             } else {
                 window.closeProfileWindow();
             }
