@@ -93,10 +93,10 @@ function initProfileTool(mapPanel)
             strokeColor: "#333333"
         },
         "Line": {
-            strokeWidth: 3,
+            strokeWidth: 5,
             strokeOpacity: 1,
-            strokeColor: "#FF6611",
-            strokeDashstyle: "dash"
+            strokeColor: "#FF1111",
+            strokeDashstyle: "dot"
         },
         "Polygon": {
             strokeWidth: 2,
@@ -145,41 +145,73 @@ function initProfileTool(mapPanel)
 /**
  * function: onProfilePathComplete(evt)
  * description: Gets called when the user has drawn a path with the profile line
- * tool. This function updates the profile chart accordingly.
+ * tool. This function prepares an array (pathCollection) which contains
+ * all the informations of the drawn line segments (coordinates, length, azimuth
+ * etc.)
  * parameters:
  * -    evt:    OpenLayers.Control.Measure "measure" event
  */
 function onProfilePathComplete(evt)
 {
     var pointCount = evt.geometry.components.length;
-    var from;
-    var to;
-    var fromEllipsoidal;
-    var toEllipsoidal;
-    var azimuth;
-    var directionString;
-    var pathCollection = new Array();
-    var srcProj = mapPanel.map.getProjectionObject();
-    var wgs84 = new OpenLayers.Projection("EPSG:4326");
+    var from; // OpenLayers Point
+    var to;  // OpenLayers Point
+    var fromEllipsoidal; // x, y
+    var toEllipsoidal; // x, y
+    var fromLonLat; // lon, lat (OpenLayer.LonLat object) in [deg]
+    var toLonLat; // lon, lat (OpenLayer.LonLat object) in [deg]
+    var segmentLength; // [km]
+    var totalLength = 0; // [km]
+    var azimuth; // azimuth in [rad]
+    var directionString; // direction of the segment: N, NE, E, SE, S a.s.o
+    var pathCollection = new Array(); // collect all the segments in this array
+    var srcProj = mapPanel.map.getProjectionObject(); // current map projection
+    var wgs84 = new OpenLayers.Projection("EPSG:4326"); // let's store wgs84 coordinates
 
     for (var i = 1; i < pointCount; i++) {
-        from = evt.geometry.components[i-1];
-        to = evt.geometry.components[i];
-        fromEllipsoidal = from.transform(srcProj, wgs84);
-        toEllipsoidal = to.transform(srcProj, wgs84);
-        azimuth = azimuthApprox(from.y, from.x, to.y, to.x); // use directly x,y
+        from            = evt.geometry.components[i-1];
+        to              = evt.geometry.components[i];
+        fromEllipsoidal = from.clone().transform(srcProj, wgs84); // transform to wgs84
+        toEllipsoidal   = to.clone().transform(srcProj, wgs84);
+        fromLonLat      = new OpenLayers.LonLat(fromEllipsoidal.x, fromEllipsoidal.y);
+        toLonLat        = new OpenLayers.LonLat(toEllipsoidal.x, toEllipsoidal.y);
+        segmentLength   = OpenLayers.Util.distVincenty(fromLonLat, toLonLat);
+        totalLength    += segmentLength;
+        azimuth         = azimuthApprox(from.y, from.x, to.y, to.x); // use directly x,y
         directionString = directionStringFromAzimuth(azimuth); // N, NE, E, SW etc.
+
         pathCollection.push({
-                                from: from,
-                                to: to,
-                                fromEllipsoidal: fromEllipsoidal, // store wgs84 lat, lon
-                                toEllipsoidal: toEllipsoidal, // store wgs84 lat, lon
-                                azimuth: azimuth,
-                                directionString: directionString,
+                                from            : from,
+                                to              : to,
+                                fromLonLat      : fromLonLat,
+                                toLonLat        : toLonLat,
+                                segmentLength   : segmentLength,
+                                azimuth         : azimuth,
+                                directionString : directionString,
                             });
     }
 
     // now you can use pathCollection to update the graph
     // total length:
-    // var geodesicLength = evt.geometry.getGeodesicLength(); // projected length in meter
+    var geodesicLength = evt.geometry.getGeodesicLength(); // projected length in meter
+    console.log('Profile line on map:');
+    console.log('Total length [km]: ' + totalLength);
+    console.log('Line segments: ' + String(pointCount-1));
+    for (var i = 0; i < pathCollection.length; i++) {
+        console.log('Segment:');
+
+        console.log('  From [WGS84, deg]: ' +
+                       pathCollection[i].fromLonLat.lon +
+                       ' ' +
+                       pathCollection[i].fromLonLat.lat);
+        console.log('  To [WGS84, deg]: ' +
+                       pathCollection[i].toLonLat.lon +
+                       ' ' +
+                       pathCollection[i].toLonLat.lat);
+        console.log('  Segment length [km]: ' + pathCollection[i].segmentLength);
+        console.log('  Azimuth [deg]: ' + pathCollection[i].azimuth*180/Math.PI);
+        console.log('  Direction: ' + pathCollection[i].directionString);
+    }
+    console.log('');
 }
+
