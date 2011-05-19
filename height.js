@@ -1,4 +1,11 @@
-function getHeightAlongPath(lat_start, lon_start, lat_end, lon_end, callback)
+/**
+ * function: getHeightAlongPath(pointArray, callback)
+ * description: Gets the height from a path
+ * parameters:
+ * -    pointArray:    e.g. [{lat: 54.4545, lon: 8.3443},{lat: 54.4545, lon: 8.3443}, ... ]
+ * return:  Array heights: [[54.4, 54.6, 54.9], [53.2, 53.4, 53.8], [52.2, 52.4, 52.8]]
+ */
+function getHeightAlongPath(pointArray, callback)
 {
-    callback([ 231.324, 243.343, 234.45, 231.324, 243.343, 234.45, 231.324, 243.343, 234.45 ]);
+    // callback([[54.4, 54.6, 54.9], [53.2, 53.4, 53.8], [52.2, 52.4, 52.8]]);
 }
