@@ -193,7 +193,6 @@ function onProfilePathComplete(evt)
 
     // now you can use pathCollection to update the graph
     // total length:
-    var geodesicLength = evt.geometry.getGeodesicLength(); // projected length in meter
     console.log('Profile line on map:');
     console.log('Total length [km]: ' + totalLength);
     console.log('Line segments: ' + String(pointCount-1));
