@@ -243,9 +243,9 @@ function onProfilePathPartial(evt)
  * description: Adds a marker to the map's "Marker" layer.
  * This function is supposed to be used by the profile draw tool.
  * parameters:
- * -    lat        : Latitude of the new marker
- * -    lon        : Longitude of the new marker
- * -    markerIcon : Marker icon to be used
+ * -    lat         : Latitude of the new marker
+ * -    lon         : Longitude of the new marker
+ * -    markerIndex : Number of icon to be used (0 = A, 1 = B, ...)
  */
 function addMarkerToMap(lat, lon, markerIndex)
 {
