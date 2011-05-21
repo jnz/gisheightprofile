@@ -49,7 +49,7 @@ Ext.onReady(function () {
              x: 15,
              y: 150,
              plugins: new GeoExt.ZoomSliderTip()
-        }],
+        }]
     });
 
     new Ext.Panel({
@@ -58,7 +58,7 @@ Ext.onReady(function () {
         renderTo: 'gxmap',
         //autoWidth: true,
         height: 600,
-        items: [mapPanel],
+        items: [mapPanel]
     });
 
     var elevationButton = new Ext.Button({
@@ -73,7 +73,7 @@ Ext.onReady(function () {
                 window.closeProfileWindow();
             }
         }
-    })
+    });
     mapPanel.getTopToolbar().addButton(elevationButton);
 
     // Profile draw tool
@@ -133,8 +133,8 @@ function initProfileTool(mapPanel)
         },
         persist: true,
         handlerOptions: {
-            layerOptions: { styleMap: styleMap },
-        },
+            layerOptions: { styleMap: styleMap }
+        }
     });
     mapPanel.map.addControl(profileControl);
 
@@ -165,6 +165,7 @@ function initProfileTool(mapPanel)
  */
 function onProfilePathComplete(evt)
 {
+    var i;
     var pointCount = evt.geometry.components.length;
     var from; // OpenLayers Point
     var to;  // OpenLayers Point
@@ -176,7 +177,7 @@ function onProfilePathComplete(evt)
     var totalLength = 0; // [km]
     var azimuth; // azimuth in [rad]
     var directionString; // direction of the segment: N, NE, E, SE, S a.s.o
-    var pathCollection = new Array(); // collect all the segments in this array
+    var pathCollection = []; // collect all the segments in this array
     var srcProj = mapPanel.map.getProjectionObject(); // current map projection
     var wgs84 = new OpenLayers.Projection("EPSG:4326"); // let's store wgs84 coordinates
 
@@ -185,7 +186,7 @@ function onProfilePathComplete(evt)
     // Add first marker:
     addMarkerToMap(evt.geometry.components[0].y,
                    evt.geometry.components[0].x, 0);
-    for (var i = 1; i < pointCount; i++) {
+    for (i = 1; i < pointCount; i++) {
         from            = evt.geometry.components[i-1];
         to              = evt.geometry.components[i];
         fromEllipsoidal = from.clone().transform(srcProj, wgs84); // transform to wgs84
@@ -206,7 +207,7 @@ function onProfilePathComplete(evt)
                                 toLonLat        : toLonLat,
                                 segmentLength   : segmentLength,
                                 azimuth         : azimuth,
-                                directionString : directionString,
+                                directionString : directionString
                             });
     }
 
@@ -215,7 +216,7 @@ function onProfilePathComplete(evt)
     console.log('Profile line on map:');
     console.log('Total length [km]: ' + totalLength);
     console.log('Line segments: ' + String(pointCount-1));
-    for (var i = 0; i < pathCollection.length; i++) {
+    for (i = 0; i < pathCollection.length; i++) {
         console.log('Segment:');
 
         console.log('  From [WGS84, deg]: ' +
@@ -250,15 +251,16 @@ function onProfilePathPartial(evt)
 function addMarkerToMap(lat, lon, markerIndex)
 {
     var markerLayerArray = mapPanel.map.getLayersByName("Markers");
-    if(markerLayerArray.length != 1) {
+    if (markerLayerArray.length != 1) {
         console.log('No marker layer found');
         return;
     }
     var markerLayer = markerLayerArray[0];
 
     // convert to a character from A-Z
-    if(markerIndex > 25)
+    if (markerIndex > 25) {
         markerIndex = 25;
+    }
     var markerLetter = String.fromCharCode(65+markerIndex);
 
     // They better not change their directory structure
@@ -275,14 +277,15 @@ function addMarkerToMap(lat, lon, markerIndex)
  */
 function clearAllMarkers()
 {
+    var i;
     var markerLayerArray = mapPanel.map.getLayersByName("Markers");
-    if(markerLayerArray.length != 1) {
+    if (markerLayerArray.length != 1) {
         return;
     }
     var markerLayer = markerLayerArray[0];
     var markerArray = markerLayer.markers;
 
-    for (var i = 0; i < markerArray.length; i++) {
+    for (i = 0; i < markerArray.length; i++) {
         markerArray[i].destroy();
     }
     markerLayer.clearMarkers();
