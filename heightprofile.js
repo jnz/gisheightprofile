@@ -148,6 +148,7 @@ function initProfileTool(mapPanel)
             if (pressed) {
                 profileControl.activate();
             } else {
+                clearAllMarkers();
                 profileControl.deactivate();
             }
         }
