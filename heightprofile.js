@@ -1,5 +1,9 @@
-var mapPanel;
+var mapPanel; // Global GeoExt.MapPanel object.
 
+/**
+ * function: Ext.onReady()
+ * description: Gets called by the ExtJS3 framework when the page is ready.
+ */
 Ext.onReady(function () {
     var map = new OpenLayers.Map();
 
@@ -24,7 +28,12 @@ Ext.onReady(function () {
     );
 
     map.addLayers([gmap, gphy, osm, ghyb, gsat]);
-    map.addControl(new OpenLayers.Control.LayerSwitcher);
+    map.addControl(new OpenLayers.Control.LayerSwitcher());
+    // map.addControl(new OpenLayers.Control.OverviewMap()); // not that cool
+    // map.addControl(new OpenLayers.Control.MousePosition()); // text overlap
+
+    var markerLayer = new OpenLayers.Layer.Markers("Markers");
+    map.addLayer(markerLayer);
 
     mapPanel = new GeoExt.MapPanel({
         map: map,
@@ -117,6 +126,9 @@ function initProfileTool(mapPanel)
         eventListeners: {
             measure: function (evt) {
                 onProfilePathComplete(evt);
+            },
+            measurepartial: function(evt) {
+                onProfilePathPartial(evt);
             }
         },
         persist: true,
@@ -168,6 +180,11 @@ function onProfilePathComplete(evt)
     var srcProj = mapPanel.map.getProjectionObject(); // current map projection
     var wgs84 = new OpenLayers.Projection("EPSG:4326"); // let's store wgs84 coordinates
 
+    // Let's remove the older markers first
+    clearAllMarkers();
+    // Add first marker:
+    addMarkerToMap(evt.geometry.components[0].y,
+                   evt.geometry.components[0].x, 0);
     for (var i = 1; i < pointCount; i++) {
         from            = evt.geometry.components[i-1];
         to              = evt.geometry.components[i];
@@ -179,6 +196,8 @@ function onProfilePathComplete(evt)
         totalLength    += segmentLength;
         azimuth         = azimuthApprox(from.y, from.x, to.y, to.x); // use directly x,y
         directionString = directionStringFromAzimuth(azimuth); // N, NE, E, SW etc.
+
+        addMarkerToMap(to.y, to.x, i);
 
         pathCollection.push({
                                 from            : from,
@@ -212,5 +231,60 @@ function onProfilePathComplete(evt)
         console.log('  Direction: ' + pathCollection[i].directionString);
     }
     console.log('');
+}
+
+function onProfilePathPartial(evt)
+{
+    // we could do something cool and dynamic here
+}
+
+/**
+ * function: addMarkerToMap(lat, lon, markerIcon)
+ * description: Adds a marker to the map's "Marker" layer.
+ * This function is supposed to be used by the profile draw tool.
+ * parameters:
+ * -    lat        : Latitude of the new marker
+ * -    lon        : Longitude of the new marker
+ * -    markerIcon : Marker icon to be used
+ */
+function addMarkerToMap(lat, lon, markerIndex)
+{
+    var markerLayerArray = mapPanel.map.getLayersByName("Markers");
+    if(markerLayerArray.length != 1) {
+        console.log('No marker layer found');
+        return;
+    }
+    var markerLayer = markerLayerArray[0];
+
+    // convert to a character from A-Z
+    if(markerIndex > 25)
+        markerIndex = 25;
+    var markerLetter = String.fromCharCode(65+markerIndex);
+
+    // They better not change their directory structure
+    var iconURL = "http://www.google.com/mapfiles/marker" + markerLetter + ".png";
+    var size    = new OpenLayers.Size(20,34);
+    var offset  = new OpenLayers.Pixel(-(size.w/2), -size.h);
+    var icon    = new OpenLayers.Icon(iconURL, size, offset);
+    markerLayer.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(lon, lat), icon));
+}
+
+/**
+ * function: clearAllMarkers()
+ * description: Remove all markers from the marker layer.
+ */
+function clearAllMarkers()
+{
+    var markerLayerArray = mapPanel.map.getLayersByName("Markers");
+    if(markerLayerArray.length != 1) {
+        return;
+    }
+    var markerLayer = markerLayerArray[0];
+    var markerArray = markerLayer.markers;
+
+    for (var i = 0; i < markerArray.length; i++) {
+        markerArray[i].destroy();
+    }
+    markerLayer.clearMarkers();
 }
 
