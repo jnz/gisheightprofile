@@ -74,6 +74,7 @@ Ext.onReady(function () {
             }
         }
     });
+    elevationButton.setIcon('ext-3.3.1/examples/shared/icons/fam/table_refresh.png');
     mapPanel.getTopToolbar().addButton(elevationButton);
 
     // Profile draw tool
@@ -151,6 +152,7 @@ function initProfileTool(mapPanel)
             }
         }
     });
+    profileButton.setIcon('ext-3.3.1/examples/shared/icons/fam/folder_go.png');
     mapPanel.getTopToolbar().addButton(profileButton);
 }
 
@@ -268,7 +270,8 @@ function addMarkerToMap(lat, lon, markerIndex)
     var size    = new OpenLayers.Size(20,34);
     var offset  = new OpenLayers.Pixel(-(size.w/2), -size.h);
     var icon    = new OpenLayers.Icon(iconURL, size, offset);
-    markerLayer.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(lon, lat), icon));
+    markerLayer.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(lon, lat),
+                          icon));
 }
 
 /**
