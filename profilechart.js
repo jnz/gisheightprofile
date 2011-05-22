@@ -3,6 +3,7 @@ Ext4.require(['Ext4.chart.*']);
 Ext4.require(['Ext4.Window', 'Ext4.fx.target.Sprite', 'Ext4.layout.container.Fit']);
 var win;
 var elevationChart;
+var minElevation;
 Ext4.onReady( function () {
 
 	window.generateElevationSampleData = function () {
@@ -38,6 +39,10 @@ Ext4.onReady( function () {
 		return data;
 	};
 	window.elevationStore=Ext4.create('Ext4.data.JsonStore', {
+		proxy: {
+			type: 'localstorage',
+			id  : 'localStore'
+		},
 		fields: ['index','elevation','lat', 'lon'],
 		data: generateElevationSampleData()
 	});
@@ -54,28 +59,31 @@ Ext4.onReady( function () {
 	}
 
 	//configuration for starting y-value
-	var heightStartValueField= {
-		xtype: 'numberfield',
-		id: 'yStartValueTxt',
-		fieldLabel: 'Y-Start-Wert',
-		labelAlign:'top',
-		value: 0,
-		maxValue: 999,
-		minValue: 0,
-		region:'south',
-		height:40,
-		border:true,
-		decimalSeparator:',',
-		decimalPrecision:0,
-		editable:false,
-		listeners: {
-			change: {
-				fn: function(obj, newVal, oldVal) {
-					elevationChart.axes[0].minimum=newVal;
+	function createHeightStartValueField(min) {
+		return {
+			xtype: 'numberfield',
+			id: 'yStartValueTxt',
+			fieldLabel: 'Y-Start-Wert',
+			labelAlign:'top',
+			value: min,
+			maxValue: 999,
+			minValue: min,
+			region:'south',
+			height:40,
+			border:true,
+			decimalSeparator:',',
+			decimalPrecision:0,
+			editable:false,
+			listeners: {
+				change: {
+					fn: function(obj, newVal, oldVal) {
+						Ext4.getCmp('chartContainer').removeAll();
+						createElevationChart(newVal);
+					}
 				}
 			}
-		}
 
+		};
 	}
 
 	//configuration for height multiplicator slider
@@ -92,81 +100,87 @@ Ext4.onReady( function () {
 		minValue: 1,
 		maxValue: 10
 	}
-	//configuration for elevationChart
-	var	elevationChart= {
-		id:'elevationChart',
-		xtype: 'chart',
-		style: 'background:#fff',
-		animate: false,
-		store: elevationStore,
-		shadow: true,
-		theme: 'Blue',
-		//legend: {
-		//	position: 'right'
-		//},
-		axes: [{
-			type: 'Numeric',
-			id:'yValAxis',
-			xtype: 'Axis',
-		//	minimum: 0,
-			position: 'left',
-			fields: ['elevation'],
-			title: 'Height in m',
-			minorTickSteps: 1,
-			grid: {
-				odd: {
-					opacity: 1,
-					fill: '#ddd',
-					stroke: '#bbb',
-					'stroke-width': 0.5
+
+	function createElevationChart(min) {
+		elevationChart= {
+			id:'elevationChart',
+			xtype: 'chart',
+			style: 'background:#fff',
+			animate: false,
+			store: elevationStore,
+			shadow: true,
+			theme: 'Blue',
+			//legend: {
+			//	position: 'right'
+			//},
+			axes: [{
+				type: 'Numeric',
+				id:'yValAxis',
+				xtype: 'Axis',
+				minimum: min,
+				position: 'left',
+				fields: ['elevation'],
+				title: 'Height in m',
+				minorTickSteps: 1,
+				grid: {
+					odd: {
+						opacity: 1,
+						fill: '#ddd',
+						stroke: '#bbb',
+						'stroke-width': 0.5
+					}
 				}
 			}
-		}
-		,{
-			type: 'Numeric',
-			position: 'bottom',
-			fields: ['index'],
-			title: 'Marker'
-		}
-		],
-		series: [{
-			type: 'area',
-			highlight:true,
-			axis: 'left',
-			grid:true,
-			smooth: false,
-			field:'index',
-			style: {
-				opacity: 0.7
-			},
-			xField: 'index',
-			yField: 'elevation',
-			tips: {
-				trackMouse: true,
-				width: 150,
-				height: 50,
-				renderer: function(storeItem, item) {
-					//cut digits
-					var elevation=Math.floor(storeItem.get('elevation'));
+			,{
+				type: 'Numeric',
+				position: 'bottom',
+				fields: ['index'],
+				title: 'Marker'
+			}
+			],
+			series: [{
+				type: 'area',
+				highlight:true,
+				axis: 'left',
+				grid:true,
+				smooth: false,
+				field:'index',
+				style: {
+					opacity: 0.7
+				},
+				xField: 'index',
+				yField: 'elevation',
+				tips: {
+					trackMouse: true,
+					width: 150,
+					height: 50,
+					renderer: function(storeItem, item) {
+						//cut digits
+						var elevation=Math.floor(storeItem.get('elevation'));
 
-					//set number of digits for coordinates
-					var digits=7;
-					var lat=storeItem.get('lat');
+						//set number of digits for coordinates
+						var digits=7;
+						var lat=storeItem.get('lat');
 
-					//set digit number, convert to string and replace "." with ","
-					lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
-					var lon=storeItem.get('lon');
-					lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
+						//set digit number, convert to string and replace "." with ","
+						lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
+						var lon=storeItem.get('lon');
+						lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
 
-					//tooltip text
-					this.setTitle('Height: ' + elevation + ' m <br> Latitude: '+ lat + '<br> Longitude: '+ lon);
-				}
-			},
-			showMarkers: false
-		}]
-	};
+						//tooltip text
+						this.setTitle('Height: ' + elevation + ' m <br> Latitude: '+ lat + '<br> Longitude: '+ lon);
+					}
+				},
+				showMarkers: false
+			}]
+		};
+		Ext4.getCmp('chartContainer').add(elevationChart);
+	}
 
 	window.createProfileWindow = function () {
+
+		minElevation=Math.floor(elevationStore.min('elevation'));
+
 		win = Ext4.createWidget('window', {
 			id: 'chartWindow',
 			width: 700,
@@ -199,21 +213,23 @@ Ext4.onReady( function () {
 					height:100,
 					minWidth:100,
 					layout: 'border',
-					items:[heightSlider,sliderLabel,heightStartValueField]
+					items:[heightSlider,sliderLabel,createHeightStartValueField(minElevation)]
 				}
 				,{
 					xtype: 'container',
+					id: 'chartContainer',
 					flex: 8,
 					border: true,
 					height: 450,
 					layout: {
 						type: 'fit'
 					},
-					items:[elevationChart]
+					items:[]
 				}]
 			}	]
 
 		});
+		createElevationChart(minElevation);
 	}
 	window.closeProfileWindow = function () {
 		if (win != undefined) {
