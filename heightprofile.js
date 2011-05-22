@@ -61,31 +61,23 @@ Ext.onReady(function () {
         items: [mapPanel]
     });
 
-    var elevationButton = new Ext.Button({
-        text: 'show Chart-Window',
-        id: 'elevationBtn',
-        enableToggle: true,
-        toggleHandler: function toggleHandler(item, pressed) {
-            if (pressed) {
-                window.createProfileWindow();
-            } else {
-                window.closeProfileWindow();
-            }
-        }
-    });
-    elevationButton.setIcon('ext-3.3.1/examples/shared/icons/fam/table_refresh.png');
-    mapPanel.getTopToolbar().addButton(elevationButton);
- 
- //button to execute elevation request
- 	var getHeightButton = new Ext.Button({
-        text: 'get height',
-        id: 'heightBtn',
-        enableToggle: false,
-        handler: function handler(button, ev) {
-            getHeightAlongPath(null, null);
-        }
-    });
-     mapPanel.getTopToolbar().addButton(getHeightButton);
+    /*
+     * var elevationButton = new Ext.Button({
+     *     text: 'show Chart-Window',
+     *     id: 'elevationBtn',
+     *     enableToggle: true,
+     *     toggleHandler: function toggleHandler(item, pressed) {
+     *         if (pressed) {
+     *             window.createProfileWindow();
+     *         } else {
+     *             window.closeProfileWindow();
+     *         }
+     *     }
+     * });
+     * elevationButton.setIcon('ext-3.3.1/examples/shared/icons/fam/table_refresh.png');
+     * mapPanel.getTopToolbar().addButton(elevationButton);
+     */
+
     // Profile draw tool
     initProfileTool(mapPanel);
 });
@@ -210,8 +202,6 @@ function onProfilePathComplete(evt)
         azimuth         = azimuthApprox(from.y, from.x, to.y, to.x); // use directly x,y
         directionString = directionStringFromAzimuth(azimuth); // N, NE, E, SW etc.
 
-        addMarkerToMap(to.y, to.x, i);
-
         pathCollection.push({
                                 from            : from,
                                 to              : to,
@@ -221,6 +211,8 @@ function onProfilePathComplete(evt)
                                 azimuth         : azimuth,
                                 directionString : directionString
                             });
+
+        addMarkerToMap(to.y, to.x, i);
     }
 
     // now you can use pathCollection to update the graph
@@ -244,6 +236,13 @@ function onProfilePathComplete(evt)
         console.log('  Direction: ' + pathCollection[i].directionString);
     }
     console.log('');
+
+    getHeightAlongPath(pathCollection, function(resultsArray, pathCollection)
+                                       {
+                                           window.closeProfileWindow();
+                                           drawChart(resultsArray, pathCollection);
+                                           window.createProfileWindow();
+                                       });
 }
 
 function onProfilePathPartial(evt)
