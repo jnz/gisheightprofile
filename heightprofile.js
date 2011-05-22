@@ -66,7 +66,6 @@ Ext.onReady(function () {
         id: 'elevationBtn',
         enableToggle: true,
         toggleHandler: function toggleHandler(item, pressed) {
-            //Ext.Msg.alert('toggleHandler', 'toggle pressed');
             if (pressed) {
                 window.createProfileWindow();
             } else {
@@ -76,7 +75,17 @@ Ext.onReady(function () {
     });
     elevationButton.setIcon('ext-3.3.1/examples/shared/icons/fam/table_refresh.png');
     mapPanel.getTopToolbar().addButton(elevationButton);
-
+ 
+ //button to execute elevation request
+ 	var getHeightButton = new Ext.Button({
+        text: 'get height',
+        id: 'heightBtn',
+        enableToggle: false,
+        handler: function handler(button, ev) {
+            getHeightAlongPath(null, null);
+        }
+    });
+     mapPanel.getTopToolbar().addButton(getHeightButton);
     // Profile draw tool
     initProfileTool(mapPanel);
 });

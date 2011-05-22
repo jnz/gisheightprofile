@@ -1,4 +1,4 @@
-getHeightAlongPath(null, null);
+//getHeightAlongPath(null, null);
 
 /**
  * function: getHeightAlongPath(pointArray, callback)
@@ -14,11 +14,13 @@ function getHeightAlongPath(pointArray, callback)
 	// Create an ElevationService.
 	    elevator = new google.maps.ElevationService();
 	 
-	  var whitney = new google.maps.LatLng(36.578581, -118.291994);
-	  var lonepine = new google.maps.LatLng(36.606111, -118.062778);
+	 // var whitney = new google.maps.LatLng(36.578581, -118.291994);
+	 // var lonepine = new google.maps.LatLng(36.606111, -118.062778);
   
- 	  var path = [ whitney, lonepine];
-  
+  	  var karlsruhe = new google.maps.LatLng(8.3990477422878, 49.027063581149);
+ 	  var stuttgart = new google.maps.LatLng(9.2559813360033, 48.738078363258);
+   	  
+   	  var path = [karlsruhe,stuttgart];
 	
 	// Create a PathElevationRequest object using this array.
 	// Ask for 256 samples along that path.
@@ -29,10 +31,12 @@ function getHeightAlongPath(pointArray, callback)
 	
 	// Initiate the path request.
 	    elevator.getElevationAlongPath(pathRequest, googleElevationcallback);
-
 }
 
 function googleElevationcallback (results, status)
 {
+	if (status==google.maps.ElevationStatus.OK){
+		drawChart(results);	
+	}
 		
 }

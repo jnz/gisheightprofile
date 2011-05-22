@@ -3,6 +3,7 @@ Ext4.require(['Ext4.chart.*']);
 Ext4.require(['Ext4.Window', 'Ext4.fx.target.Sprite', 'Ext4.layout.container.Fit']);
 var win;
 Ext4.onReady( function () {
+
 	window.generateData = function (n, floor) {
 		var data = [],
 		p = (Math.random() * 11) + 1,
@@ -26,52 +27,51 @@ Ext4.onReady( function () {
 		}
 		return data;
 	};
-	window.generateDataNegative = function (n, floor) {
+	window.generateHeightSampleData = function () {
 		var data = [],
-		p = (Math.random() * 11) + 1,
 		i;
 
-		floor = (!floor && floor !== 0) ? 20 : floor;
+		var startLat= 9;
+		var startLon= 40;
 
-		for (i = 0; i < (n || 12); i++) {
+		for (i = 0; i < 50; i++) {
 			data.push({
-				name: Ext4.Date.monthNames[i % 12],
-				data1: Math.floor(((Math.random() - 0.5) * 100), floor),
-				data2: Math.floor(((Math.random() - 0.5) * 100), floor),
-				data3: Math.floor(((Math.random() - 0.5) * 100), floor),
-				data4: Math.floor(((Math.random() - 0.5) * 100), floor),
-				data5: Math.floor(((Math.random() - 0.5) * 100), floor),
-				data6: Math.floor(((Math.random() - 0.5) * 100), floor),
-				data7: Math.floor(((Math.random() - 0.5) * 100), floor),
-				data8: Math.floor(((Math.random() - 0.5) * 100), floor),
-				data9: Math.floor(((Math.random() - 0.5) * 100), floor)
+				index: i,
+				height: Math.floor(Math.max((Math.random() * 1000))),
+				lat: startLat,
+				lon: startLon
+			});
+			startLat+=0.1;
+			startLon+=0.1;
+		}
+		return data;
+	};
+	window.generateHeightDataFromResults = function (results) {
+		var data = [];
+
+		for (var i = 0; i < results.length; i++) {
+			data.push({
+				index: i,
+				height: results[i].elevation,
+				lat: results[i].location.Ja,
+				lon: results[i].location.Ka
+
 			});
 		}
+
 		return data;
 	};
 	window.store1 = Ext4.create('Ext4.data.JsonStore', {
 		fields: ['name', 'data1', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7', 'data9', 'data9'],
 		data: generateData()
 	});
-	window.storeNegatives = Ext4.create('Ext4.data.JsonStore', {
-		fields: ['name', 'data1', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7', 'data9', 'data9'],
-		data: generateDataNegative()
+
+	window.heightStore=Ext4.create('Ext4.data.JsonStore', {
+		fields: ['index','height','lat', 'lon'],
+		data: generateHeightSampleData()
 	});
-	window.store3 = Ext4.create('Ext4.data.JsonStore', {
-		fields: ['name', 'data1', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7', 'data9', 'data9'],
-		data: generateData()
-	});
-	window.store4 = Ext4.create('Ext4.data.JsonStore', {
-		fields: ['name', 'data1', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7', 'data9', 'data9'],
-		data: generateData()
-	});
-	window.store5 = Ext4.create('Ext4.data.JsonStore', {
-		fields: ['name', 'data1', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7', 'data9', 'data9'],
-		data: generateData()
-	});
-	store1.loadData(generateData(8));
-	
-	var sliderLabelConfig={
+
+	var sliderLabel= {
 		xtype:'label',
 		region:'north',
 		height:30,
@@ -80,22 +80,21 @@ Ext4.onReady( function () {
 		},
 		text: 'Height multiplicator:'
 	}
-	var heightStartValueConfig={
+	var heightStartValueField= {
 		xtype: 'numberfield',
-        id: 'yStartValueTxt',
-        fieldLabel: 'Y-Start-Wert',
-        labelAlign:'top',
-        value: 0,
-        maxValue: 999,
-        minValue: 0,
+		id: 'yStartValueTxt',
+		fieldLabel: 'Y-Start-Wert',
+		labelAlign:'top',
+		value: 0,
+		maxValue: 999,
+		minValue: 0,
 		region:'south',
 		height:40,
-		border:true,
-		frame:true
-		
+		border:true
+
 	}
-	
-	var sliderConfig= {
+
+	var heightSlider= {
 		id:'heightSlider',
 		xtype: 'slider',
 		region:'center',
@@ -105,29 +104,29 @@ Ext4.onReady( function () {
 		value: 1,
 		style: {
 			margin:10
-			
+
 		},
 		increment: 1,
 		minValue: 1,
 		maxValue: 10
 	}
 
-	var elevationChartConfig= {
+	var elevationChart= {
 		id:'elevationChart',
 		xtype: 'chart',
 		style: 'background:#fff',
 		animate: true,
-		store: store1,
+		store: heightStore,
 		shadow: true,
-		theme: 'Category1',
-		legend: {
-			position: 'right'
-		},
+		theme: 'Sky',
+		//legend: {
+		//	position: 'right'
+		//},
 		axes: [{
 			type: 'Numeric',
 			minimum: 0,
 			position: 'left',
-			fields: ['data1', 'data2', 'data3'],
+			fields: ['height'],
 			title: 'Height in m',
 			minorTickSteps: 1,
 			grid: {
@@ -138,12 +137,14 @@ Ext4.onReady( function () {
 					'stroke-width': 0.5
 				}
 			}
-		},{
-			type: 'Category',
-			position: 'bottom',
-			fields: ['name'],
-			title: 'Path'
-		}],
+		}
+		/*,{
+		 type: 'Category',
+		 position: 'bottom',
+		 fields: ['index'],
+		 title: 'Path'
+		 }*/
+		],
 		series: [{
 			type: 'line',
 			highlight: {
@@ -151,48 +152,19 @@ Ext4.onReady( function () {
 				radius: 7
 			},
 			axis: 'left',
+			grid:true,
+			highlight:true,
+			smooth: false,
 			xField: 'name',
-			yField: 'data1',
-			markerConfig: {
-				type: 'cross',
-				size: 4,
-				radius: 4,
-				'stroke-width': 0
-			}
-		},{
-			type: 'line',
-			highlight: {
-				size: 7,
-				radius: 7
-			},
-			axis: 'left',
-			smooth: true,
-			xField: 'name',
-			yField: 'data2',
-			markerConfig: {
-				type: 'circle',
-				size: 4,
-				radius: 4,
-				'stroke-width': 0
-			}
-		},{
-			type: 'line',
-			highlight: {
-				size: 7,
-				radius: 7
-			},
-			axis: 'left',
-			smooth: true,
-			fill: true,
-			xField: 'name',
-			yField: 'data3',
-			markerConfig: {
-				type: 'circle',
-				size: 4,
-				radius: 4,
-				'stroke-width': 0
-			}
+			yField: 'height',
+			showMarkers: false
+			/*markerConfig: {
 
+			 type: 'cross',
+			 size: 4,
+			 radius: 4,
+			 'stroke-width': 0
+			 }*/
 		}]
 	}
 
@@ -212,11 +184,10 @@ Ext4.onReady( function () {
 			tbar: [{
 				text: 'Reload Data',
 				handler: function () {
-					store1.loadData(generateData(100));
+					heightStore.loadData(generateHeightSampleData());
 				}
 			}],
 			items:[{
-				frame:true,
 				xtype:'panel',
 				style: 'border: 1px solid #666',
 				layout: {
@@ -226,24 +197,22 @@ Ext4.onReady( function () {
 				items:[{
 					xtype: 'panel',
 					flex: 1,
-					frame:true,
 					border:true,
 					height:100,
 					minWidth:100,
 					layout: 'border',
-					items:[sliderConfig,sliderLabelConfig,heightStartValueConfig]
+					items:[heightSlider,sliderLabel,heightStartValueField]
 				}
 				,{
 					xtype: 'container',
 					flex: 8,
-					frame:true,
 					border: true,
 					height: 450,
 					//width: 400,
 					layout: {
 						type: 'fit'
 					},
-					items:[elevationChartConfig]
+					items:[elevationChart]
 				}]
 			}	]
 
@@ -253,5 +222,8 @@ Ext4.onReady( function () {
 		if (win != undefined) {
 			win.destroy();
 		}
+	}
+	window.drawChart = function (elevationArray) {
+		heightStore.loadData(generateHeightDataFromResults(elevationArray));
 	}
 });
