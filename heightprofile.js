@@ -239,6 +239,7 @@ function onProfilePathComplete(evt)
 
     getHeightAlongPath(pathCollection, function(resultsArray, pathCollection)
                                        {
+                                           window.closeProfileWindow();
                                            drawChart(resultsArray, pathCollection);
                                            window.createProfileWindow();
                                        });

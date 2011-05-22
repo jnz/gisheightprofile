@@ -31,7 +31,7 @@ function getHeightAlongPath(pathCollection, callback)
     // Ask for 256 samples along that path.
     var pathRequest = {
         'path'    : path,
-        'samples' : 128
+        'samples' : 256
     };
 
     // Initiate the path request.
@@ -41,11 +41,11 @@ function getHeightAlongPath(pathCollection, callback)
             });
 }
 
-function googleElevationCallback(results, status, callback, pathCollection, bias)
+function googleElevationCallback(results, status, callback, pathCollection)
 {
     if (status == google.maps.ElevationStatus.OK) {
         var i;
-        var bias = -Math.random() * 500;
+        var bias = -300 + Math.random() * 500; // FIXME: remove this
         var returnArray = new Array(results.length);
         for (i = 0; i < results.length; i++) {
             noise = Math.random()*20; // FIXME: remove this
