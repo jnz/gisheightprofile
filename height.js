@@ -20,18 +20,24 @@
 function getHeightAlongPath(pathCollection, callback)
 {
     // Create an ElevationService.
-    elevator = new google.maps.ElevationService();
+    var elevator = new google.maps.ElevationService();
+    var i;
+    var segCount = pathCollection.length; // path segment count
+    var path = new Array(segCount+1); // e. g. 2 segments have 3 points
 
-    var karlsruhe = new google.maps.LatLng(8.3990477422878, 49.027063581149);
-    var stuttgart = new google.maps.LatLng(9.2559813360033, 48.738078363258);
-
-    var path = [karlsruhe, stuttgart];
+    // Create the path from the segments.
+    for (i = 0; i < segCount; i++) {
+        path[i] = new google.maps.LatLng(pathCollection[i].fromLonLat.lat,
+                                         pathCollection[i].fromLonLat.lon);
+    }
+    path[segCount] = new google.maps.LatLng(pathCollection[segCount-1].toLonLat.lat,
+                                            pathCollection[segCount-1].toLonLat.lon);
 
     // Create a PathElevationRequest object using this array.
     // Ask for 256 samples along that path.
     var pathRequest = {
         'path'    : path,
-        'samples' : 256
+        'samples' : 200
     };
 
     // Initiate the path request.
@@ -45,18 +51,16 @@ function googleElevationCallback(results, status, callback, pathCollection)
 {
     if (status == google.maps.ElevationStatus.OK) {
         var i;
-        var bias = -300 + Math.random() * 500; // FIXME: remove this
         var returnArray = new Array(results.length);
         for (i = 0; i < results.length; i++) {
-            noise = Math.random()*20; // FIXME: remove this
             returnArray[i] = { lat       : results[i].location.lat(),
                                lon       : results[i].location.lng(),
-                               elevation : results[i].elevation + bias + noise };
+                               elevation : results[i].elevation };
         }
         callback(returnArray, pathCollection);
     }
     else {
-        callback(null);
+        callback(null, null);
     }
 }
 
