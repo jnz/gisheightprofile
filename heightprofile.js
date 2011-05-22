@@ -7,11 +7,11 @@ var mapPanel; // Global GeoExt.MapPanel object.
 Ext.onReady(function () {
     var map = new OpenLayers.Map();
 
-    var gmap = new OpenLayers.Layer.Google("Google Streets", {
-        numZoomLevels: 20
-    });
     var gphy = new OpenLayers.Layer.Google("Google Physical", {
         type: google.maps.MapTypeId.TERRAIN
+    });
+    var gmap = new OpenLayers.Layer.Google("Google Streets", {
+        numZoomLevels: 20
     });
     var osm = new OpenLayers.Layer.OSM();
     var ghyb = new OpenLayers.Layer.Google("Google Hybrid", {
@@ -27,7 +27,7 @@ Ext.onReady(function () {
     // used to be {type: G_SATELLITE_MAP, numZoomLevels: 22}
     );
 
-    map.addLayers([gmap, gphy, osm, ghyb, gsat]);
+    map.addLayers([gphy, gmap, osm, ghyb, gsat]);
     map.addControl(new OpenLayers.Control.LayerSwitcher());
     // map.addControl(new OpenLayers.Control.OverviewMap()); // not that cool
     // map.addControl(new OpenLayers.Control.MousePosition()); // text overlap
