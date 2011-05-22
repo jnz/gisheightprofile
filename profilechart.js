@@ -3,6 +3,7 @@ Ext4.require(['Ext4.chart.*']);
 Ext4.require(['Ext4.Window', 'Ext4.fx.target.Sprite', 'Ext4.layout.container.Fit']);
 var win;
 var elevationChart;
+var currentStoreData;
 var minElevation;
 Ext4.onReady( function () {
 
@@ -35,7 +36,7 @@ Ext4.onReady( function () {
 				lon: results[i].lon
 			});
 		}
-
+		currentStoreData=data;
 		return data;
 	};
 	window.elevationStore=Ext4.create('Ext4.data.JsonStore', {
@@ -70,15 +71,19 @@ Ext4.onReady( function () {
 			minValue: min,
 			region:'south',
 			height:40,
+			disableKeyFilter:true,
+			keyNavEnabled: true,
 			border:true,
 			decimalSeparator:',',
 			decimalPrecision:0,
-			editable:false,
+			editable:true,
 			listeners: {
 				change: {
 					fn: function(obj, newVal, oldVal) {
 						Ext4.getCmp('chartContainer').removeAll();
+						//TODO add slider value for majorTick
 						createElevationChart(newVal);
+						elevationStore.loadData(currentStoreData);
 					}
 				}
 			}
@@ -118,7 +123,10 @@ Ext4.onReady( function () {
 				id:'yValAxis',
 				xtype: 'Axis',
 				minimum: min,
+				adjustMinimumByMajorUnit:false,
+				decimals:0,
 				position: 'left',
+				//majorTickSteps:5,
 				fields: ['elevation'],
 				title: 'Height in m',
 				minorTickSteps: 1,
