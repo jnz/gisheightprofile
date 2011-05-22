@@ -97,7 +97,7 @@ Ext4.onReady( function () {
 		id:'elevationChart',
 		xtype: 'chart',
 		style: 'background:#fff',
-		animate: true,
+		animate: false,
 		store: elevationStore,
 		shadow: true,
 		theme: 'Blue',
@@ -134,7 +134,6 @@ Ext4.onReady( function () {
 			highlight:true,
 			axis: 'left',
 			grid:true,
-			highlight:true,
 			smooth: false,
 			field:'index',
 			style: {
@@ -221,8 +220,7 @@ Ext4.onReady( function () {
 			win.destroy();
 		}
 	}
-	window.drawChart = function (elevationArray) {
-		elevationArray=elevationArray;
+	window.drawChart = function (elevationArray, pathCollection) {
 		elevationStore.loadData(generateElevationDataFromResults(elevationArray));
 	}
 });
