@@ -29,9 +29,8 @@ Ext4.onReady( function () {
 			data.push({
 				index: i,
 				elevation: results[i].elevation,
-				lat: results[i].location.Ja,
-				lon: results[i].location.Ka
-
+				lat: results[i].lat,
+				lon: results[i].lon
 			});
 		}
 
@@ -202,7 +201,7 @@ Ext4.onReady( function () {
 			win.destroy();
 		}
 	}
-	window.drawChart = function (elevationArray) {
+	window.drawChart = function (elevationArray, pathCollection) {
 		elevationStore.loadData(generateElevationDataFromResults(elevationArray));
 	}
 });
