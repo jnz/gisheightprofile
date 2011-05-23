@@ -57,7 +57,7 @@ Ext.onReady(function () {
         layout: 'fit',
         renderTo: 'gxmap',
         //autoWidth: true,
-        height: 600,
+        height: 700,
         items: [mapPanel]
     });
 
