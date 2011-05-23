@@ -297,6 +297,11 @@ Ext4.onReady( function () {
 	 * 								elevation
 	 *								latitude
 	 * 								longitude
+	 * 								breakPoint = null // if not a breakpoint
+	 * 								breakPoint.azimuth // [rad]
+	 * 								breakPoint.directionString // N, E, SW, etc.
+	 * 								breakPoint.index // segment index
+	 *
 	 * -    pathCollection:    (const) array with the following attributes per items:
 	 *                              from (current projection)
 	 *                              to (current projection)
@@ -305,6 +310,7 @@ Ext4.onReady( function () {
 	 *                              segmentLength (km)
 	 *                              azimuth (rad)
 	 *                              directionString
+	 *                              cumulativeLength (km)
 	 */
 	window.drawChart = function (elevationArray, pathCollection) {
 		elevationStore.loadData(generateElevationDataFromResults(elevationArray));
