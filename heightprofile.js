@@ -1,4 +1,4 @@
-var mapPanel; // Global GeoExt.MapPanel object.
+var mapPanel = null; // Global GeoExt.MapPanel object.
 
 /**
  * function: Ext.onReady()
@@ -17,15 +17,11 @@ Ext.onReady(function () {
     var ghyb = new OpenLayers.Layer.Google("Google Hybrid", {
         type: google.maps.MapTypeId.HYBRID,
         numZoomLevels: 20
-    }
-    // used to be {type: G_HYBRID_MAP, numZoomLevels: 20}
-    );
+    });
     var gsat = new OpenLayers.Layer.Google("Google Satellite", {
         type: google.maps.MapTypeId.SATELLITE,
         numZoomLevels: 22
-    }
-    // used to be {type: G_SATELLITE_MAP, numZoomLevels: 22}
-    );
+    });
 
     map.addLayers([gphy, gmap, osm, ghyb, gsat]);
     map.addControl(new OpenLayers.Control.LayerSwitcher());
@@ -60,23 +56,6 @@ Ext.onReady(function () {
         height: 700,
         items: [mapPanel]
     });
-
-    /*
-     * var elevationButton = new Ext.Button({
-     *     text: 'show Chart-Window',
-     *     id: 'elevationBtn',
-     *     enableToggle: true,
-     *     toggleHandler: function toggleHandler(item, pressed) {
-     *         if (pressed) {
-     *             window.createProfileWindow();
-     *         } else {
-     *             window.closeProfileWindow();
-     *         }
-     *     }
-     * });
-     * elevationButton.setIcon('ext-3.3.1/examples/shared/icons/fam/table_refresh.png');
-     * mapPanel.getTopToolbar().addButton(elevationButton);
-     */
 
     // Profile draw tool
     initProfileTool(mapPanel);
@@ -161,7 +140,7 @@ function initProfileTool(mapPanel)
 /**
  * function: onProfilePathComplete(evt)
  * description: Gets called when the user has drawn a path with the profile line
- * tool. This function prepares an array (pathCollection) which contains
+ * tool. This function prepares an array (segmentArray) which contains
  * all the informations of the drawn line segments (coordinates, length, azimuth
  * etc.)
  * parameters:
@@ -181,7 +160,7 @@ function onProfilePathComplete(evt)
     var totalLength = 0; // [km]
     var azimuth; // azimuth in [rad]
     var directionString; // direction of the segment: N, NE, E, SE, S a.s.o
-    var pathCollection = []; // collect all the segments in this array
+    var segmentArray = []; // collect all the segments in this array
     var srcProj = mapPanel.map.getProjectionObject(); // current map projection
     var wgs84 = new OpenLayers.Projection("EPSG:4326"); // let's store wgs84 coordinates
 
@@ -198,45 +177,49 @@ function onProfilePathComplete(evt)
         fromLonLat      = new OpenLayers.LonLat(fromEllipsoidal.x, fromEllipsoidal.y);
         toLonLat        = new OpenLayers.LonLat(toEllipsoidal.x, toEllipsoidal.y);
         segmentLength   = OpenLayers.Util.distVincenty(fromLonLat, toLonLat);
-        totalLength    += segmentLength;
         azimuth         = azimuthApprox(from.y, from.x, to.y, to.x); // use directly x,y
         directionString = directionStringFromAzimuth(azimuth); // N, NE, E, SW etc.
 
-        pathCollection.push({
-                                from            : from,
-                                to              : to,
-                                fromLonLat      : fromLonLat,
-                                toLonLat        : toLonLat,
-                                segmentLength   : segmentLength,
-                                azimuth         : azimuth,
-                                directionString : directionString
-                            });
+        segmentArray.push({   from            : from,
+                              to              : to,
+                              fromLonLat      : fromLonLat,
+                              toLonLat        : toLonLat,
+                              segmentLength   : segmentLength,
+                              azimuth         : azimuth,
+                              directionString : directionString,
+                              cumulativeLength: totalLength
+                          });
 
+        totalLength += segmentLength;
         addMarkerToMap(to.y, to.x, i);
     }
 
-    // now you can use pathCollection to update the graph
+    // now you can use segmentArray to update the graph
     // total length:
     console.log('Profile line on map:');
     console.log('Total length [km]: ' + totalLength);
     console.log('Line segments: ' + String(pointCount-1));
-    for (i = 0; i < pathCollection.length; i++) {
+    for (i = 0; i < segmentArray.length; i++) {
         console.log('Segment:');
 
         console.log('  From [WGS84, deg]: ' +
-                       pathCollection[i].fromLonLat.lon +
+                       segmentArray[i].fromLonLat.lon +
                        ' ' +
-                       pathCollection[i].fromLonLat.lat);
+                       segmentArray[i].fromLonLat.lat);
         console.log('  To [WGS84, deg]: ' +
-                       pathCollection[i].toLonLat.lon +
+                       segmentArray[i].toLonLat.lon +
                        ' ' +
-                       pathCollection[i].toLonLat.lat);
-        console.log('  Segment length [km]: ' + pathCollection[i].segmentLength);
-        console.log('  Azimuth [deg]: ' + pathCollection[i].azimuth*180/Math.PI);
-        console.log('  Direction: ' + pathCollection[i].directionString);
+                       segmentArray[i].toLonLat.lat);
+        console.log('  Segment length [km]: ' + segmentArray[i].segmentLength);
+        console.log('  Azimuth [deg]: ' + segmentArray[i].azimuth*180/Math.PI);
+        console.log('  Direction: ' + segmentArray[i].directionString);
     }
     console.log('');
 
+    var pathCollection = {
+        segmentArray : segmentArray,
+        totalLength  : totalLength
+    };
     getHeightAlongPath(pathCollection, function(resultsArray, pathCollection)
                                        {
                                            window.closeProfileWindow();
@@ -269,9 +252,7 @@ function addMarkerToMap(lat, lon, markerIndex)
     var markerLayer = markerLayerArray[0];
 
     // convert to a character from A-Z
-    if (markerIndex > 25) {
-        markerIndex = 25;
-    }
+    markerIndex = Math.min(markerIndex, 25);
     var markerLetter = String.fromCharCode(65+markerIndex);
 
     // They better not change their directory structure
