@@ -1,12 +1,24 @@
 Ext4.require(['Ext4.data.*']);
 Ext4.require(['Ext4.chart.*']);
 Ext4.require(['Ext4.Window', 'Ext4.fx.target.Sprite', 'Ext4.layout.container.Fit']);
+
+//declare global variables
 var win;
 var elevationChart;
 var currentStoreData;
 var minElevation;
+
+/**
+ * function: Ext4.onReady()
+ * description: Initiation function for Extjs 4 Sandbox. It gets called when page is ready
+ */
 Ext4.onReady( function () {
 
+	/**
+	 * function: generateElevationSampleData()
+	 * description: Function generates sample data, which can be visualized in chart
+	 * return:  Mixed Array data: random data in an array. Fields: [index, elevation, lat, lon]
+	 */
 	window.generateElevationSampleData = function () {
 		var data = [],
 		i;
@@ -25,6 +37,14 @@ Ext4.onReady( function () {
 		}
 		return data;
 	};
+	/**
+	 * function: generateElevationDataFromResults(Array results)
+	 * description: Function parses result-array from elevation service and puts result data into return-array.
+	 * Return-array acts as data for JSON-Store --> chart-data
+	 * parameters:
+	 * -    results:    array returned from elevation-service
+	 * return:  Array data: array for chart-data. Fields: [index, elevation, lat, lon]
+	 */
 	window.generateElevationDataFromResults = function (results) {
 		var data = [];
 
@@ -39,6 +59,7 @@ Ext4.onReady( function () {
 		currentStoreData=data;
 		return data;
 	};
+	//create JsonStore = base data for chart
 	window.elevationStore=Ext4.create('Ext4.data.JsonStore', {
 		proxy: {
 			type: 'localstorage',
@@ -59,7 +80,14 @@ Ext4.onReady( function () {
 		text: 'Height multiplicator:'
 	}
 
-	//configuration for starting y-value
+	/**
+	 * function: createHeightStartValueField(Number min)
+	 * description: configuration function for starting y-value. Minimum-value and value gets passed.
+	 * function gets called while creating profile window.
+	 * parameters:
+	 * -    min:    minimum value as number (lowest value from data)
+	 * return:  configuration for y-value numberfield
+	 */
 	function createHeightStartValueField(min) {
 		return {
 			xtype: 'numberfield',
@@ -91,7 +119,8 @@ Ext4.onReady( function () {
 		};
 	}
 
-	//configuration for height multiplicator slider
+	//TODO handler for slider changes tick size
+	//configuration for height multiplicator slider. Slider redraws chart with new majorTickSize
 	var heightSlider= {
 		id:'heightSlider',
 		xtype: 'slider',
@@ -106,6 +135,14 @@ Ext4.onReady( function () {
 		maxValue: 10
 	}
 
+	/**
+	 * function: createElevationChart(Number min)
+	 * description: function creates configuration for elevation-chart and adds it to 'chartContainer' in profile window.
+	 * The minimum value for y-axis gets passed. Function gets called when main profile window gets created
+	 * and when yStartValue-numberfield value changes.
+	 * parameters:
+	 * -    min:    minimum value sets min-value of y-axis in chart.
+	 */
 	function createElevationChart(min) {
 		elevationChart= {
 			id:'elevationChart',
@@ -115,9 +152,6 @@ Ext4.onReady( function () {
 			store: elevationStore,
 			shadow: true,
 			theme: 'Blue',
-			//legend: {
-			//	position: 'right'
-			//},
 			axes: [{
 				type: 'Numeric',
 				id:'yValAxis',
@@ -182,13 +216,19 @@ Ext4.onReady( function () {
 				showMarkers: false
 			}]
 		};
+		//add chart to 'chartContainer' in profile window
 		Ext4.getCmp('chartContainer').add(elevationChart);
 	}
 
+	/**
+	 * function: createProfileWindow()
+	 * description: function creates main profile window, which holds chart, slider and numberfield
+	 */
 	window.createProfileWindow = function () {
-
+		// detect lowest value from data and save it in 'minElevation'
 		minElevation=Math.floor(elevationStore.min('elevation'));
 
+		//create window component
 		win = Ext4.createWidget('window', {
 			id: 'chartWindow',
 			width: 700,
@@ -232,18 +272,40 @@ Ext4.onReady( function () {
 					layout: {
 						type: 'fit'
 					},
-					items:[]
+					items:[]//leave item empty, because it gets generated and added through createElevationChart()-function
 				}]
 			}	]
 
 		});
 		createElevationChart(minElevation);
 	}
+	/**
+	 * function: closeProfileWindow()
+	 * description: Function closes profile window
+	 */
 	window.closeProfileWindow = function () {
 		if (win != undefined) {
 			win.destroy();
 		}
 	}
+	/**
+	 * function: drawChart(elevationArray, pathCollection)
+	 * description: Function generates data for JsonStore from result of elevation service
+	 * and loads it into elevationStore. After doing this, chart gets redrawn with new data.
+	 * parameters:
+	 * -    elevationArray:    return array from elevation service. Fields:
+	 * 								elevation
+	 *								latitude
+	 * 								longitude
+	 * -    pathCollection:    (const) array with the following attributes per items:
+	 *                              from (current projection)
+	 *                              to (current projection)
+	 *                              fromLonLat (OpenLayer.LonLat, WGS84, deg)
+	 *                              toLonLat (OpenLayer.LonLat, WGS84, deg)
+	 *                              segmentLength (km)
+	 *                              azimuth (rad)
+	 *                              directionString
+	 */
 	window.drawChart = function (elevationArray, pathCollection) {
 		elevationStore.loadData(generateElevationDataFromResults(elevationArray));
 	}
