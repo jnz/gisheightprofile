@@ -197,10 +197,13 @@ Ext4.onReady( function () {
 						//set number of digits for coordinates
 						var digits=7;
 						var lat=storeItem.get('lat');
+						var lon=storeItem.get('lon');
+
+						// show marker on map
+						setMoveableMarker(lat, lon);
 
 						//set digit number, convert to string and replace "." with ","
 						lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
-						var lon=storeItem.get('lon');
 						lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
 
 						//tooltip text
@@ -222,7 +225,7 @@ Ext4.onReady( function () {
 					field: 'index',
 					renderer: function (n) {
 						//convert via ascii code to char
-						return String.fromCharCode(n+65);
+						return String.fromCharCode(n+65+1);
 					},
 					'text-anchor': 'middle',
 					contrast: false

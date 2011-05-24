@@ -167,8 +167,8 @@ function onProfilePathComplete(evt)
     // Let's remove the older markers first
     clearAllMarkers();
     // Add first marker:
-    addMarkerToMap(evt.geometry.components[0].y,
-                   evt.geometry.components[0].x, 0);
+    addMarkerToMap(evt.geometry.components[0].x,
+                   evt.geometry.components[0].y, 0);
     for (i = 1; i < pointCount; i++) {
         from            = evt.geometry.components[i-1];
         to              = evt.geometry.components[i];
@@ -191,7 +191,7 @@ function onProfilePathComplete(evt)
                           });
 
         totalLength += segmentLength;
-        addMarkerToMap(to.y, to.x, i);
+        addMarkerToMap(to.x, to.y, i);
     }
 
     // now you can use segmentArray to update the graph
@@ -238,11 +238,11 @@ function onProfilePathPartial(evt)
  * description: Adds a marker to the map's "Marker" layer.
  * This function is supposed to be used by the profile draw tool.
  * parameters:
- * -    lat         : Latitude of the new marker
- * -    lon         : Longitude of the new marker
+ * -    x         : Longitude of the new marker (native projection)
+ * -    y         : Latitude of the new marker (native projection)
  * -    markerIndex : Number of icon to be used (0 = A, 1 = B, ...)
  */
-function addMarkerToMap(lat, lon, markerIndex)
+function addMarkerToMap(x, y, markerIndex)
 {
     var markerLayerArray = mapPanel.map.getLayersByName("Markers");
     if (markerLayerArray.length != 1) {
@@ -255,12 +255,11 @@ function addMarkerToMap(lat, lon, markerIndex)
     markerIndex = Math.min(markerIndex, 25);
     var markerLetter = String.fromCharCode(65+markerIndex);
 
-    // They better not change their directory structure
-    var iconURL = "http://www.google.com/mapfiles/marker" + markerLetter + ".png";
+    var iconURL = "img/red_Marker" + markerLetter + ".png";
     var size    = new OpenLayers.Size(20,34);
     var offset  = new OpenLayers.Pixel(-(size.w/2), -size.h);
     var icon    = new OpenLayers.Icon(iconURL, size, offset);
-    markerLayer.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(lon, lat),
+    markerLayer.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(x, y),
                           icon));
 }
 
@@ -282,5 +281,67 @@ function clearAllMarkers()
         markerArray[i].destroy();
     }
     markerLayer.clearMarkers();
+}
+
+/**
+ * function: setMoveableMarker(lat, lon)
+ * description: Set the moveable marker to a position
+ * parameters:
+ * -    lat       : Longitude of the new marker (WGS84)
+ * -    lon       : Latitude of the new marker (WGS84)
+ */
+function setMoveableMarker(lat, lon)
+{
+    var i;
+    var markerLayerArray = mapPanel.map.getLayersByName("Markers");
+    if (markerLayerArray.length != 1) {
+        return;
+    }
+    var markerLayer = markerLayerArray[0];
+    var markerArray = markerLayer.markers;
+
+     // convert wgs84 input from function arguments to current system
+    var nativeProj  = mapPanel.map.getProjectionObject();
+    var wgs84       = new OpenLayers.Projection("EPSG:4326");
+    var pWGS84      = new OpenLayers.LonLat(lon, lat);
+    var pNative     = pWGS84.clone().transform(wgs84, nativeProj);
+
+    // if we already have a moveable marker, just update the position
+    for (i = 0; i < markerArray.length; i++) {
+        if (markerArray[i].isMoveableMarker == true) {
+            var px = mapPanel.map.getLayerPxFromLonLat(pNative);
+            markerArray[i].moveTo(px);
+            markerArray[i].display(true);
+            return;
+        }
+    }
+
+    // We have not found our moveable marker layer, so we create it.
+    // This is a sort of lazy loading.
+    var iconURL = "img/blue_Marker.png";
+    var size    = new OpenLayers.Size(20,34);
+    var offset  = new OpenLayers.Pixel(-(size.w/2), -size.h);
+    var icon    = new OpenLayers.Icon(iconURL, size, offset);
+    var marker  = new OpenLayers.Marker(pNative, icon)
+    marker.isMoveableMarker = true;
+    markerLayer.addMarker(marker);
+}
+
+function clearMoveableMarker()
+{
+    var markerLayerArray = mapPanel.map.getLayersByName("Markers");
+    if (markerLayerArray.length != 1) {
+        return;
+    }
+    var markerLayer = markerLayerArray[0];
+    var markerArray = markerLayer.markers;
+
+    // searching for the marker and hiding it.
+    for (var i = 0; i < markerArray.length; i++) {
+        if (markerArray[i].isMoveableMarker == true) {
+            markerArray[i].display(false);
+            return;
+        }
+    }
 }
 
