@@ -49,12 +49,26 @@ Ext4.onReady( function () {
 		var data = [];
 
 		for (var i = 0; i < results.length; i++) {
-			data.push({
-				index: i,
-				elevation: results[i].elevation,
-				lat: results[i].lat,
-				lon: results[i].lon
-			});
+
+			if (results[i].breakPoint) {
+
+				data.push({
+					index: i,
+					elevation: results[i].elevation,
+					lat: results[i].lat,
+					lon: results[i].lon,
+					markerElevation:results[i].elevation,
+					direction: results[i].breakPoint.directionString
+				});
+			} else {
+				data.push({
+					index: i,
+					elevation: results[i].elevation,
+					lat: results[i].lat,
+					lon: results[i].lon
+				});
+			}
+
 		}
 		currentStoreData=data;
 		return data;
@@ -65,7 +79,7 @@ Ext4.onReady( function () {
 			type: 'localstorage',
 			id  : 'localStore'
 		},
-		fields: ['index','elevation','lat', 'lon'],
+		fields: ['index','elevation','lat', 'lon','markerElevation','direction','markerElevationIndex','markerNo'],
 		data: generateElevationSampleData()
 	});
 
@@ -95,7 +109,7 @@ Ext4.onReady( function () {
 			fieldLabel: 'Y-Start-Wert',
 			labelAlign:'top',
 			value: min,
-			maxValue: 999,
+			maxValue: 9999,
 			minValue: min,
 			region:'south',
 			height:40,
@@ -147,10 +161,9 @@ Ext4.onReady( function () {
 		elevationChart= {
 			id:'elevationChart',
 			xtype: 'chart',
-			style: 'background:#fff',
 			animate: false,
 			store: elevationStore,
-			shadow: true,
+			shadow: false,
 			theme: 'Blue',
 			axes: [{
 				type: 'Numeric',
@@ -191,7 +204,7 @@ Ext4.onReady( function () {
 					opacity: 0.7
 				},
 				xField: 'index',
-				yField: 'elevation',
+				yField: 'markerElevation',
 				tips: {
 					trackMouse: true,
 					width: 150,
@@ -213,7 +226,38 @@ Ext4.onReady( function () {
 						this.setTitle('Height: ' + elevation + ' m <br> Latitude: '+ lat + '<br> Longitude: '+ lon);
 					}
 				},
-				showMarkers: false
+			},{
+				type: 'scatter',
+				highlight:false,
+				axis: 'left',
+				markerConfig: {
+					type: 'circle',
+					radius: 10,
+					fill: '#FF0000',
+					'stroke-width': 0
+				},
+				label: {
+					display: 'middle',
+					field: 'index',
+					renderer: function (n) {
+						//convert via ascii code to char
+						return String.fromCharCode(n+65);
+					},
+					'text-anchor': 'middle',
+					contrast: false
+				},
+
+				xField: 'index',
+				yField: 'markerElevation',
+				tips: {
+					trackMouse: true,
+					width: 100,
+					height: 40,
+					renderer: function(storeItem, item) {
+						//tooltip text
+						this.setTitle('Marker: ' + storeItem.get('markerNo') + '<br> Direction: '+ storeItem.get('direction'));
+					}
+				}
 			}]
 		};
 		//add chart to 'chartContainer' in profile window
