@@ -14,30 +14,7 @@ var minElevation;
  */
 Ext4.onReady( function () {
 
-	/**
-	 * function: generateElevationSampleData()
-	 * description: Function generates sample data, which can be visualized in chart
-	 * return:  Mixed Array data: random data in an array. Fields: [index, elevation, lat, lon]
-	 */
-	window.generateElevationSampleData = function () {
-		var data = [],
-		i;
-		var startLat= 9;
-		var startLon= 40;
-
-		for (i = 0; i < 200; i++) {
-			data.push({
-				index: i,
-				elevation: Math.floor(Math.max((Math.random() * 1000))),
-				lat: startLat,
-				lon: startLon
-			});
-			startLat+=0.1;
-			startLon+=0.1;
-		}
-		return data;
-	};
-	/**
+		/**
 	 * function: generateElevationDataFromResults(Array results)
 	 * description: Function parses result-array from elevation service and puts result data into return-array.
 	 * Return-array acts as data for JSON-Store --> chart-data
@@ -83,8 +60,7 @@ Ext4.onReady( function () {
 			type: 'localstorage',
 			id  : 'localStore'
 		},
-		fields: ['index','elevation','lat', 'lon','markerElevation','direction','markerNo','yAxisLength'],
-		data: generateElevationSampleData()
+		fields: ['index','elevation','lat', 'lon','markerElevation','direction','markerNo','yAxisLength']
 	});
 
 	//configuration for height multiplicator slider-label
@@ -290,12 +266,6 @@ Ext4.onReady( function () {
 			title: 'Height Profile',
 			renderTo: Ext4.getBody(),
 			layout: 'fit',
-			tbar: [{
-				text: 'Reload Data',
-				handler: function () {
-					elevationStore.loadData(generateElevationSampleData());
-				}
-			}],
 			items:[{
 				xtype:'panel',
 				style: 'border: 1px solid #666',
