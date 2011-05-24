@@ -45,9 +45,10 @@ Ext4.onReady( function () {
 	 * -    results:    array returned from elevation-service
 	 * return:  Array data: array for chart-data. Fields: [index, elevation, lat, lon]
 	 */
-	window.generateElevationDataFromResults = function (results) {
+	window.generateElevationDataFromResults = function (results, totalLength) {
 		var data = [];
-
+		var gapLength=totalLength/results.length;
+		var totalGapLength=0;
 		for (var i = 0; i < results.length; i++) {
 
 			if (results[i].breakPoint) {
@@ -58,17 +59,20 @@ Ext4.onReady( function () {
 					lat: results[i].lat,
 					lon: results[i].lon,
 					markerElevation:results[i].elevation,
-					direction: results[i].breakPoint.directionString
+					direction: results[i].breakPoint.directionString,
+					markerNo: String.fromCharCode(results[i].breakPoint.index+65),
+					yAxisLength:totalGapLength
 				});
 			} else {
 				data.push({
 					index: i,
 					elevation: results[i].elevation,
 					lat: results[i].lat,
-					lon: results[i].lon
+					lon: results[i].lon,
+					yAxisLength:totalGapLength
 				});
 			}
-
+			totalGapLength+=gapLength;
 		}
 		currentStoreData=data;
 		return data;
@@ -79,7 +83,7 @@ Ext4.onReady( function () {
 			type: 'localstorage',
 			id  : 'localStore'
 		},
-		fields: ['index','elevation','lat', 'lon','markerElevation','direction','markerElevationIndex','markerNo'],
+		fields: ['index','elevation','lat', 'lon','markerElevation','direction','markerNo','yAxisLength'],
 		data: generateElevationSampleData()
 	});
 
@@ -110,7 +114,8 @@ Ext4.onReady( function () {
 			labelAlign:'top',
 			value: min,
 			maxValue: 9999,
-			minValue: min,
+			//	minValue: min,
+			minValue:-3000,
 			region:'south',
 			height:40,
 			disableKeyFilter:true,
@@ -175,7 +180,7 @@ Ext4.onReady( function () {
 				position: 'left',
 				//majorTickSteps:5,
 				fields: ['elevation'],
-				title: 'Height in m',
+				title: 'height in m',
 				minorTickSteps: 1,
 				grid: {
 					odd: {
@@ -189,8 +194,8 @@ Ext4.onReady( function () {
 			,{
 				type: 'Numeric',
 				position: 'bottom',
-				fields: ['index'],
-				title: 'Marker'
+				fields: ['yAxisLength'],
+				title: 'path in km'
 			}
 			],
 			series: [{
@@ -204,7 +209,7 @@ Ext4.onReady( function () {
 					opacity: 0.7
 				},
 				xField: 'index',
-				yField: 'markerElevation',
+				yField: 'elevation',
 				tips: {
 					trackMouse: true,
 					width: 150,
@@ -357,6 +362,6 @@ Ext4.onReady( function () {
 	 *                              cumulativeLength (km)
 	 */
 	window.drawChart = function (elevationArray, pathCollection) {
-		elevationStore.loadData(generateElevationDataFromResults(elevationArray));
+		elevationStore.loadData(generateElevationDataFromResults(elevationArray, pathCollection.totalLength));
 	}
 });
