@@ -25,7 +25,8 @@ Ext.onReady(function () {
 
     map.addLayers([gphy, gmap, osm, ghyb, gsat]);
     map.addControl(new OpenLayers.Control.LayerSwitcher());
-    // map.addControl(new OpenLayers.Control.OverviewMap()); // not that cool
+    map.addControl(new OpenLayers.Control.OverviewMap({ maximized : true,
+                                                        autoPan   : false }));
     // map.addControl(new OpenLayers.Control.MousePosition()); // text overlap
 
     var markerLayer = new OpenLayers.Layer.Markers("Markers");
