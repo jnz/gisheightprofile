@@ -38,7 +38,7 @@ Ext4.onReady( function () {
 					markerElevation:results[i].elevation,
 					direction: results[i].breakPoint.directionString,
 					markerNo: String.fromCharCode(results[i].breakPoint.index+65),
-					yAxisLength:totalGapLength
+					xAxisLength:totalGapLength
 				});
 			} else {
 				data.push({
@@ -46,7 +46,7 @@ Ext4.onReady( function () {
 					elevation: results[i].elevation,
 					lat: results[i].lat,
 					lon: results[i].lon,
-					yAxisLength:totalGapLength
+					xAxisLength:totalGapLength
 				});
 			}
 			totalGapLength+=gapLength;
@@ -60,7 +60,7 @@ Ext4.onReady( function () {
 			type: 'localstorage',
 			id  : 'localStore'
 		},
-		fields: ['index','elevation','lat', 'lon','markerElevation','direction','markerNo','yAxisLength']
+		fields: ['index','elevation','lat', 'lon','markerElevation','direction','markerNo','xAxisLength']
 	});
 
 	//configuration for height multiplicator slider-label
@@ -170,7 +170,7 @@ Ext4.onReady( function () {
 			,{
 				type: 'Numeric',
 				position: 'bottom',
-				fields: ['yAxisLength'],
+				fields: ['xAxisLength'],
 				title: 'path in km'
 			}
 			],
