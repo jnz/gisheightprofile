@@ -163,7 +163,7 @@ Ext4.onReady( function () {
 		elevationChart= {
 			id:'elevationChart',
 			xtype: 'chart',
-			animate: false,
+			animate: true,
 			store: elevationStore,
 			shadow: false,
 			theme: 'Blue',
