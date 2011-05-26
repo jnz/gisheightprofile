@@ -5,8 +5,9 @@ Ext4.require(['Ext4.Window', 'Ext4.fx.target.Sprite', 'Ext4.layout.container.Fit
 //declare global variables
 var win;
 var elevationChart;
-var currentStoreData;
+var currentStoreData=[];
 var minElevation;
+var maxElevation;
 
 /**
  * function: Ext4.onReady()
@@ -14,36 +15,50 @@ var minElevation;
  */
 Ext4.onReady( function () {
 
-		/**
-	 * function: generateElevationDataFromResults(Array results)
+	/**
+	 * function: generateElevationDataFromResults(Array results, Number totalLength)
 	 * description: Function parses result-array from elevation service and puts result data into return-array.
 	 * Return-array acts as data for JSON-Store --> chart-data
 	 * parameters:
-	 * -    results:    array returned from elevation-service
+	 * -    results:    	array returned from elevation-service
+	 * -	totalLength:	total length of all path segments
 	 * return:  Array data: array for chart-data. Fields: [index, elevation, lat, lon]
 	 */
 	window.generateElevationDataFromResults = function (results, totalLength) {
 		var data = [];
 		var gapLength=totalLength/results.length;
 		var totalGapLength=0;
+		//get max Elevation for marker label placement in chart
+		maxElevation=results[0].elevation;
+		for (var i = 1; i < results.length; i++) {
+			if (results[i].elevation>=maxElevation) {
+				maxElevation=results[i].elevation;
+			}
+		}
+		//round it to a hundreder value and add offset. Marker labels must be always visible
+		maxElevation=(Math.floor(maxElevation/100)*100)+97;
+
 		for (var i = 0; i < results.length; i++) {
 
 			if (results[i].breakPoint) {
 
 				data.push({
 					index: i,
-					elevation: results[i].elevation,
+					elevation: results[i].elevation,//elevation can be changed through filter, this is why displayElevation is needed
+					displayElevation: results[i].elevation,
 					lat: results[i].lat,
 					lon: results[i].lon,
-					markerElevation:results[i].elevation,
+					markerElevation:maxElevation,
 					direction: results[i].breakPoint.directionString,
 					markerNo: String.fromCharCode(results[i].breakPoint.index+65),
+					markerIndex: results[i].breakPoint.index,
 					xAxisLength:totalGapLength
 				});
 			} else {
 				data.push({
 					index: i,
 					elevation: results[i].elevation,
+					displayElevation: results[i].elevation,
 					lat: results[i].lat,
 					lon: results[i].lon,
 					xAxisLength:totalGapLength
@@ -51,7 +66,8 @@ Ext4.onReady( function () {
 			}
 			totalGapLength+=gapLength;
 		}
-		currentStoreData=data;
+		//save current data to global array
+		currentStoreData=cloneArray(data);
 		return data;
 	};
 	//create JsonStore = base data for chart
@@ -60,7 +76,7 @@ Ext4.onReady( function () {
 			type: 'localstorage',
 			id  : 'localStore'
 		},
-		fields: ['index','elevation','lat', 'lon','markerElevation','direction','markerNo','xAxisLength']
+		fields: ['index','elevation','lat', 'lon','markerElevation','direction','markerNo','markerIndex','xAxisLength','displayElevation']
 	});
 
 	//configuration for height multiplicator slider-label
@@ -75,23 +91,23 @@ Ext4.onReady( function () {
 	}
 
 	/**
-	 * function: createHeightStartValueField(Number min)
-	 * description: configuration function for starting y-value. Minimum-value and value gets passed.
+	 * function: createHeightStartValueField(Number min, Number max)
+	 * description: configuration function for starting y-value. Minimum and Maximum-value get passed.
 	 * function gets called while creating profile window.
 	 * parameters:
 	 * -    min:    minimum value as number (lowest value from data)
+	 * -	max:	maximum value as number (highest value from data)
 	 * return:  configuration for y-value numberfield
 	 */
-	function createHeightStartValueField(min) {
+	function createHeightStartValueField(min,max) {
 		return {
 			xtype: 'numberfield',
 			id: 'yStartValueTxt',
 			fieldLabel: 'Y-Start-Wert',
 			labelAlign:'top',
 			value: min,
-			maxValue: 9999,
-			//	minValue: min,
-			minValue:-3000,
+			maxValue: max-50, //abstract 50 to always show region of at least 50m
+			minValue: min,
 			region:'south',
 			height:40,
 			disableKeyFilter:true,
@@ -99,14 +115,18 @@ Ext4.onReady( function () {
 			border:true,
 			decimalSeparator:',',
 			decimalPrecision:0,
-			editable:true,
+			step:50,
+			editable:false,
 			listeners: {
 				change: {
 					fn: function(obj, newVal, oldVal) {
 						Ext4.getCmp('chartContainer').removeAll();
 						//TODO add slider value for majorTick
-						createElevationChart(newVal);
-						elevationStore.loadData(currentStoreData);
+
+						//draw new axis with new min-value
+						createElevationChart(parseInt(newVal), maxElevation);
+						//filter data, that is smaller than new min value and display it in chart
+						elevationStore.loadData(filterDataByMinValue(newVal));
 					}
 				}
 			}
@@ -123,7 +143,7 @@ Ext4.onReady( function () {
 		vertical:true,
 		value: 1,
 		style: {
-			margin:10
+			margin:15
 		},
 		increment: 1,
 		minValue: 1,
@@ -131,14 +151,15 @@ Ext4.onReady( function () {
 	}
 
 	/**
-	 * function: createElevationChart(Number min)
+	 * function: createElevationChart(Number min, Number max)
 	 * description: function creates configuration for elevation-chart and adds it to 'chartContainer' in profile window.
-	 * The minimum value for y-axis gets passed. Function gets called when main profile window gets created
+	 * The minimum value and maximum value for y-axis get passed. Function gets called when main profile window gets created
 	 * and when yStartValue-numberfield value changes.
 	 * parameters:
 	 * -    min:    minimum value sets min-value of y-axis in chart.
+	 * -	max:	maximum value sets max-value of y-axis in chart.
 	 */
-	function createElevationChart(min) {
+	function createElevationChart(min,max) {
 		elevationChart= {
 			id:'elevationChart',
 			xtype: 'chart',
@@ -151,13 +172,13 @@ Ext4.onReady( function () {
 				id:'yValAxis',
 				xtype: 'Axis',
 				minimum: min,
+				maximum: max,
 				adjustMinimumByMajorUnit:false,
 				decimals:0,
 				position: 'left',
-				//majorTickSteps:5,
+				majorTickSteps:9,
 				fields: ['elevation'],
 				title: 'height in m',
-				minorTickSteps: 1,
 				grid: {
 					odd: {
 						opacity: 1,
@@ -176,7 +197,7 @@ Ext4.onReady( function () {
 			],
 			series: [{
 				type: 'area',
-				highlight:true,
+				highlight:false,
 				axis: 'left',
 				grid:true,
 				smooth: false,
@@ -192,7 +213,7 @@ Ext4.onReady( function () {
 					height: 50,
 					renderer: function(storeItem, item) {
 						//cut digits
-						var elevation=Math.floor(storeItem.get('elevation'));
+						var elevation=Math.floor(storeItem.get('displayElevation'));
 
 						//set number of digits for coordinates
 						var digits=7;
@@ -224,8 +245,9 @@ Ext4.onReady( function () {
 					display: 'middle',
 					field: 'index',
 					renderer: function (n) {
+						//show marker Char
 						//convert via ascii code to char
-						return String.fromCharCode(n+65+1);
+						return String.fromCharCode(n+65+1)/*+': ' + elevationStore.findRecord('markerIndex',n+1).get('direction')*/;
 					},
 					'text-anchor': 'middle',
 					contrast: false
@@ -234,12 +256,27 @@ Ext4.onReady( function () {
 				xField: 'index',
 				yField: 'markerElevation',
 				tips: {
-					trackMouse: true,
-					width: 100,
-					height: 40,
+					trackMouse: false,
+					width: 150,
+					height: 60,
 					renderer: function(storeItem, item) {
+						//cut digits
+						var elevation=Math.floor(storeItem.get('displayElevation'));
+
+						//set number of digits for coordinates
+						var digits=7;
+						var lat=storeItem.get('lat');
+						var lon=storeItem.get('lon');
+
+						// show marker on map
+						setMoveableMarker(lat, lon);
+
+						//set digit number, convert to string and replace "." with ","
+						lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
+						lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
 						//tooltip text
-						this.setTitle('Marker: ' + storeItem.get('markerNo') + '<br> Direction: '+ storeItem.get('direction'));
+						this.setTitle('Direction: '+ storeItem.get('direction') +'<br>Height: ' + elevation + ' m <br> Latitude: '+ lat + '<br> Longitude: '+ lon);
+
 					}
 				}
 			}]
@@ -255,6 +292,13 @@ Ext4.onReady( function () {
 	window.createProfileWindow = function () {
 		// detect lowest value from data and save it in 'minElevation'
 		minElevation=Math.floor(elevationStore.min('elevation'));
+		//round minimum value to 50er
+		minElevation=(Math.floor(minElevation/50)*50);
+
+		//detect highest value from data
+		maxElevation=Math.floor(elevationStore.max('elevation'));
+		//round maximum value to next higher hundreder and add 100
+		maxElevation=(Math.floor(maxElevation/100)*100)+100;
 
 		//create window component
 		win = Ext4.createWidget('window', {
@@ -283,7 +327,7 @@ Ext4.onReady( function () {
 					height:100,
 					minWidth:100,
 					layout: 'border',
-					items:[heightSlider,sliderLabel,createHeightStartValueField(minElevation)]
+					items:[heightSlider,sliderLabel,createHeightStartValueField(minElevation,maxElevation)]
 				}
 				,{
 					xtype: 'container',
@@ -299,7 +343,7 @@ Ext4.onReady( function () {
 			}	]
 
 		});
-		createElevationChart(minElevation);
+		createElevationChart(minElevation,maxElevation);
 	}
 	/**
 	 * function: closeProfileWindow()
@@ -335,6 +379,45 @@ Ext4.onReady( function () {
 	 *                              cumulativeLength (km)
 	 */
 	window.drawChart = function (elevationArray, pathCollection) {
+		elevationStore.clearFilter(true);
 		elevationStore.loadData(generateElevationDataFromResults(elevationArray, pathCollection.totalLength));
 	}
+	/**
+	 * function: filterDataByMinValue(Number min)
+	 * description: function loops through currentDataStore and checks if each value is bigger than passed min-value.
+	 * 				When value is smaller then min-value, it gets set to min-value in order to still display it in chart at the bottom.
+	 * 				Filter-function of Store-class wouldn't display it.
+	 * parameters:
+	 * -    min:    minimum value from starting y-value-numberfield.
+	 * return:  Array retData: Array with updated elevations
+	 * */
+	function filterDataByMinValue(min) {
+		var retData=cloneArray(currentStoreData);
+		for (var i = 0; i < retData.length; i++) {
+			if(retData[i].elevation<=min) {
+				retData[i].elevation=min;
+			}
+		}
+		return retData;
+	}
+
 });
+/**
+ * function: cloneArray(Array soureArr)
+ * description: recursive function duplicates array
+ * parameters:
+ * -    soureArr:    source-array
+ * return:  Array clonedArr: copy of array
+ * */
+function cloneArray(soureArr) {
+	var clonedArr = (soureArr instanceof Array) ? [] : {};
+	for (i in soureArr) {
+		if (i == 'clone')
+			continue;
+		if (soureArr[i] && typeof soureArr[i] == "object") {
+			clonedArr[i] = cloneArray(soureArr[i]);
+		} else
+			clonedArr[i] = soureArr[i]
+	}
+	return clonedArr;
+};

@@ -24,7 +24,8 @@ function directionString(latStart, lonStart, latEnd, lonEnd)
  */
 function directionStringFromAzimuth(azimuth)
 {
-    var azStrTable = [ "N", "NE", "E", "SE", "S", "SW", "W", "NW", "N" ];
+    //var azStrTable = [ "N", "NE", "E", "SE", "S", "SW", "W", "NW", "N" ];
+    var azStrTable = [ "North", "North-East", "East", "South-East", "South", "South-West", "West", "North-West", "North" ];
     var index = Math.round(8*azimuth/(Math.PI*2));
     return azStrTable[index];
 }
