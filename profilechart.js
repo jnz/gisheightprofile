@@ -126,7 +126,7 @@ Ext4.onReady( function () {
 						//draw new axis with new min-value
 						createElevationChart(parseInt(newVal), maxElevation);
 						//filter data, that is smaller than new min value and display it in chart
-						elevationStore.loadData(filterDataByMinValue(newVal));
+						elevationStore.loadData(filterDataByMinValue(parseInt(newVal)));
 					}
 				}
 			}
@@ -197,7 +197,7 @@ Ext4.onReady( function () {
 			],
 			series: [{
 				type: 'area',
-				highlight:false,
+				highlight:true,
 				axis: 'left',
 				grid:true,
 				smooth: false,
