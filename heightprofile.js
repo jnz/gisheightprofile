@@ -33,19 +33,19 @@ Ext.onReady(function () {
     map.addLayer(markerLayer);
 
     mapPanel = new GeoExt.MapPanel({
-        map: map,
-        region: 'center',
-        zoom: 6,
-        tbar: new Ext.Toolbar(),
-        center: new OpenLayers.LonLat(11.019287, 51.041394).transform(
-        new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()),
+        map    : map,
+        region : 'center',
+        zoom   : 6,
+        tbar   : new Ext.Toolbar(),
+        center : new OpenLayers.LonLat(11.019287, 51.041394).transform(
+                 new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()),
         items: [{
-             xtype: "gx_zoomslider",
-             vertical: true,
-             height: 100,
-             x: 15,
-             y: 150,
-             plugins: new GeoExt.ZoomSliderTip()
+             xtype    : "gx_zoomslider",
+             vertical : true,
+             height   : 100,
+             x        : 15,
+             y        : 150,
+             plugins  : new GeoExt.ZoomSliderTip()
         }]
     });
 
@@ -57,6 +57,36 @@ Ext.onReady(function () {
         height: 700,
         items: [mapPanel]
     });
+
+    // Begin Printing functions
+    var printProvider = new GeoExt.data.PrintProvider({
+        method       : "GET", // "POST" recommended for production use
+        capabilities : printCapabilities, // provide url instead for lazy loading
+        customParams : {
+                           mapTitle : "Map",
+                           comment  : "This shows you the region."
+                       }
+    });
+    var printButton = new Ext.Button({
+        text: 'Print',
+        handler: function() {
+            printDialog = new Ext.Window({
+                title      : "Print Preview",
+                layout     : "fit",
+                width      : 350,
+                autoHeight : true,
+                items      : [{
+                                xtype         : "gx_printmappanel",
+                                sourceMap     : mapPanel,
+                                printProvider : printProvider
+                             }]
+            });
+            printDialog.show();
+        }
+    });
+    printButton.setIcon('ext-3.3.1/examples/shared/icons/fam/book.png');
+    mapPanel.getTopToolbar().addButton(printButton);
+    // End Printing functions
 
     // Profile draw tool
     initProfileTool(mapPanel);
