@@ -57,7 +57,7 @@ Ext.onReady(function () {
         height: 700,
         items: [mapPanel]
     });
-
+/*
     // Begin Printing functions
     var printProvider = new GeoExt.data.PrintProvider({
         method       : "GET", // "POST" recommended for production use
@@ -85,9 +85,9 @@ Ext.onReady(function () {
         }
     });
     printButton.setIcon('ext-3.3.1/examples/shared/icons/fam/book.png');
-    mapPanel.getTopToolbar().addButton(printButton);
+   // mapPanel.getTopToolbar().addButton(printButton);
     // End Printing functions
-
+*/
     // Profile draw tool
     initProfileTool(mapPanel);
 });
