@@ -33,18 +33,40 @@ Ext4.onReady( function () {
 	//store for vertical Exaggeration combobox
 	var vertExagStore = Ext4.create('Ext4.data.Store', {
 		fields: ['dispVal', 'value'],
+		autoLoad:true,
 		data : [{
+			"dispVal":"0.25",
+			"value":0.25
+		},{
+			"dispVal":"0.5",
+			"value":0.5
+		},{
 			"dispVal":"1",
 			"value":1
 		},{
 			"dispVal":"2",
 			"value":2
 		},{
+			"dispVal":"2.5",
+			"value":2.5
+		},{
 			"dispVal":"5",
 			"value":5
 		},{
+			"dispVal":"10",
+			"value":10
+		},{
+			"dispVal":"20",
+			"value":20
+		},{
+			"dispVal":"50",
+			"value":50
+		},{
 			"dispVal":"100",
 			"value":100
+		},{
+			"dispVal":"200",
+			"value":200
 		},{
 			"dispVal":"500",
 			"value":500
@@ -52,8 +74,14 @@ Ext4.onReady( function () {
 			"dispVal":"1000",
 			"value":1000
 		},{
+			"dispVal":"2000",
+			"value":2000
+		},{
 			"dispVal":"5000",
 			"value":5000
+		},{
+			"dispVal":"10000",
+			"value":10000
 		}
 		]
 	});
@@ -79,7 +107,6 @@ Ext4.onReady( function () {
 		fieldLabel: 'Choose Vertical Exaggeration',
 		labelAlign:'top',
 		height:55,
-		value:1,
 		store: vertExagStore,
 		queryMode: 'local',
 		displayField: 'dispVal',
@@ -94,6 +121,9 @@ Ext4.onReady( function () {
 				return 'Value must be bigger than 0';
 			} else if (parseFloat(value)<=maxVertExag && parseFloat(value)>0) {
 				Ext4.getCmp('applyVertExagButton').setDisabled(false);
+				return true;
+			} else if (value=="") {
+				Ext4.getCmp('applyVertExagButton').setDisabled(true);
 				return true;
 			} else {
 				Ext4.getCmp('applyVertExagButton').setDisabled(true);
@@ -112,7 +142,7 @@ Ext4.onReady( function () {
 		scale:'medium',
 		handler : function() {
 			//the new vertical range gets calculated by the entered value. This value gets added to the minimal y-axis value from numberfield
-			var comboValue=parseInt(Ext4.getCmp('comboVertExag').getValue());
+			var comboValue=parseFloat(Ext4.getCmp('comboVertExag').getValue());
 			var vertRange=parseInt(Ext4.getCmp('yStartValueTxt').getValue())+calcVertRange(comboValue);
 			//the chart gets only redrawn, if the new value is bigger than the maximum elevation
 			if(vertRange>maxElevation) {
@@ -194,6 +224,24 @@ Ext4.onReady( function () {
 		};
 	}
 
+	//read-only textfield displays the maximum vertical exaggeration, which can be typed in to display whole data
+	var minYAxisText= {
+		xtype:'displayfield',
+		id:'minYAxisText',
+		fieldLabel: 'Min',
+		labelAlign:'left',
+		labelWidth:35,
+		height:20
+	}
+	//read-only textfield displays the maximum vertical exaggeration, which can be typed in to display whole data
+	var maxYAxisText= {
+		xtype:'displayfield',
+		id:'maxYAxisText',
+		fieldLabel: 'Max',
+		labelAlign:'left',
+		labelWidth:35,
+		height:20
+	}
 	//main control panel holds all controls
 	var northControlPanel= {
 		id:'northControlPanel',
@@ -226,21 +274,22 @@ Ext4.onReady( function () {
 		},
 		items:[comboVertExag,applyVertExagButton]
 	}
-
-	//TODO handler for slider changes tick size
-	//configuration for height multiplicator slider. Slider redraws chart with new majorTickSize
-	var heightSlider= {
-		id:'heightSlider',
-		xtype: 'slider',
-		//region:'center',
-		vertical:true,
-		value: 1,
-		style: {
-			margin:15
+	var southControlPanel= {
+		id:'southControlPanel',
+		xtype:'panel',
+		height:80,
+		bodyStyle: {
+			background: '#dfe8f6 '
 		},
-		increment: 1,
-		minValue: 1,
-		maxValue: 10
+
+		border: true,
+		region:'south',
+		layout: {
+			type: 'vbox',
+			align: 'stretch',
+			padding: 5
+		},
+		items:[minYAxisText,maxYAxisText]
 	}
 
 	/**
@@ -261,14 +310,33 @@ Ext4.onReady( function () {
 			listeners: {
 				resize: {
 					fn: function(obj, newWidth, newSize) {
-						var vertExag=Math.floor(calcVertExag());
+						var vertExag=Math.floor(calcVertExag()*Math.pow(10,2))/Math.pow(10,2);
 						Ext4.getCmp('vertExagNumberField').setValue(vertExag);
-						Ext4.getCmp('maxVertExagText').setValue(Math.floor(calcMaxVertExag()));
+						Ext4.getCmp('maxVertExagText').setValue(Math.floor(calcMaxVertExag()*Math.pow(10,2))/Math.pow(10,2));
 						Ext4.getCmp('comboVertExag').validate();
+
+						//apply filter to combobox
+						//clear filter
+						var ds = vertExagStore;
+						if (ds.realSnapshot && ds.realSnapshot != ds.snapshot) {
+							ds.snapshot = ds.realSnapshot;
+							delete ds.realSnapshot;
+						}
+						ds.clearFilter(true);
+						//filter values smaller than maxVertExag out of combobox
+						ds.filterBy( function fn(obj) {
+							if(obj.get('value')<maxVertExag) {
+								return true;
+							} else {
+								return false;
+
+							}
+						});
+						ds.realSnapshot = ds.snapshot;
+						ds.snapshot = ds.data;
 
 					}
 				}
-
 			},
 			shadow: false,
 			theme: 'Blue',
@@ -390,7 +458,6 @@ Ext4.onReady( function () {
 		};
 		//add chart to 'chartContainer' in profile window
 		Ext4.getCmp('chartContainer').add(elevationChart);
-
 	}
 
 	/**
@@ -434,7 +501,7 @@ Ext4.onReady( function () {
 					height:100,
 					minWidth:100,
 					layout: 'border',
-					items:[northControlPanel,mainControlPanel]
+					items:[northControlPanel,mainControlPanel,southControlPanel]
 				}
 				,{
 					xtype: 'container',
@@ -456,8 +523,10 @@ Ext4.onReady( function () {
 
 		createElevationChart(minElevation,maxElevation);
 
-		var vertExag=Math.floor(calcVertExag());
+		var vertExag=Math.floor(calcVertExag()*Math.pow(10,2))/Math.pow(10,2);
 		Ext4.getCmp('vertExagNumberField').setValue(vertExag);
+		Ext4.getCmp('minYAxisText').setValue(minElevation);
+		Ext4.getCmp('maxYAxisText').setValue(maxElevation-50);
 
 	}
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -553,7 +622,6 @@ Ext4.onReady( function () {
 	 *                              cumulativeLength (km)
 	 */
 	window.drawChart = function (elevationArray, pathCollection) {
-		elevationStore.clearFilter(true);
 		totalLength=pathCollection.totalLength;
 		elevationStore.loadData(generateElevationDataFromResults(elevationArray, totalLength));
 	}
@@ -578,18 +646,20 @@ Ext4.onReady( function () {
 
 	function calcVertRange(vertExag) {
 		var maxHor=Ext4.getCmp('elevationChart').axes.items[1].to;
-		var chartWidth=Ext4.getCmp('elevationChart').getWidth()-81;
+		maxHor=Math.floor(maxHor*Math.pow(10,1))/Math.pow(10,1)
+		var chartWidth=Ext4.getCmp('elevationChart').getWidth()-90;
 		var horScale=maxHor/chartWidth;
-		var chartHeight=Ext4.getCmp('elevationChart').getHeight()-70;
+		var chartHeight=Ext4.getCmp('elevationChart').getHeight()-74;
 		var range=horScale*(chartHeight/vertExag);
 		return range*1000;
 	}
 
 	function calcVertExag() {
 		var maxHor=Ext4.getCmp('elevationChart').axes.items[1].to;
-		var chartWidth=Ext4.getCmp('elevationChart').getWidth()-81;
+		maxHor=Math.floor(maxHor*Math.pow(10,1))/Math.pow(10,1)
+		var chartWidth=Ext4.getCmp('elevationChart').getWidth()-90;
 		var horScale=maxHor/chartWidth;
-		var chartHeight=Ext4.getCmp('elevationChart').getHeight()-70;
+		var chartHeight=Ext4.getCmp('elevationChart').getHeight()-74;
 		//var range=maxElevation-minElevation;
 		var range=Ext4.getCmp('elevationChart').axes.items[0].to-Ext4.getCmp('elevationChart').axes.items[0].from;
 		var vertScale=range*0.001/chartHeight;
@@ -599,9 +669,10 @@ Ext4.onReady( function () {
 
 	function calcMaxVertExag() {
 		var maxHor=Ext4.getCmp('elevationChart').axes.items[1].to;
-		var chartWidth=Ext4.getCmp('elevationChart').getWidth()-81;
+		maxHor=Math.floor(maxHor*Math.pow(10,1))/Math.pow(10,1)
+		var chartWidth=Ext4.getCmp('elevationChart').getWidth()-90;
 		var horScale=maxHor/chartWidth;
-		var chartHeight=Ext4.getCmp('elevationChart').getHeight()-70;
+		var chartHeight=Ext4.getCmp('elevationChart').getHeight()-74;
 		var range=maxElevation-parseInt(Ext4.getCmp('yStartValueTxt').getValue());
 		var vertScale=range*0.001/chartHeight;
 		var vertExag= horScale/vertScale;
