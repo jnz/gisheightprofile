@@ -136,15 +136,15 @@ function initProfileTool(mapPanel)
         enableToggle: true,
         toggleGroup: toggleGroup,
         toggleHandler: function (item, pressed) {
+            clearAllMarkers();
             if (pressed) {
                 profileControl.activate();
             } else {
-                clearAllMarkers();
                 profileControl.deactivate();
             }
         }
     });
-    profileButton.setIcon('ext-3.3.1/examples/shared/icons/fam/folder_go.png');
+    profileButton.setIcon('img/map_edit.png');
     mapPanel.getTopToolbar().addButton(profileButton);
 }
 
