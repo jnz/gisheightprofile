@@ -94,10 +94,10 @@ function initProfileTool(mapPanel)
             strokeColor: "#333333"
         },
         "Line": {
-            strokeWidth: 5,
-            strokeOpacity: 1,
+            strokeWidth: 6,
+            strokeOpacity: 0.4,
             strokeColor: "#FF1111",
-            strokeDashstyle: "dot"
+            strokeDashstyle: "solid"
         },
         "Polygon": {
             strokeWidth: 2,
