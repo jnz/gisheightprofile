@@ -52,7 +52,16 @@ Ext.onReady(function() {
     });
     mapPanel = Ext.getCmp("mappanel");
 
+    //Init height profile button
     initProfileTool(mapPanel);
+
+    //Add geocoder search text box
+    var geoNameSearchCombo = new GeoExt.ux.GeoNamesSearchCombo({
+       map  : map,
+       zoom : 12
+    });
+    mapPanel.getTopToolbar().addFill(); // right align the search box
+    mapPanel.getTopToolbar().add(geoNameSearchCombo);
 
     var gmap = new OpenLayers.Layer.Google("Google Streets", {
         numZoomLevels: 20,
