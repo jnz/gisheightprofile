@@ -422,7 +422,7 @@ Ext4.onReady( function () {
 					renderer: function (n) {
 						//show marker Char
 						//convert via ascii code to char
-						return String.fromCharCode(n+65+1)/*+': ' + elevationStore.findRecord('markerIndex',n+1).get('direction')*/;
+						return String.fromCharCode(n+65)/*+': ' + elevationStore.findRecord('markerIndex',n+1).get('direction')*/;
 					},
 					'text-anchor': 'middle',
 					contrast: false

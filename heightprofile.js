@@ -191,14 +191,14 @@ function onProfilePathComplete(evt)
         azimuth         = azimuthApprox(from.y, from.x, to.y, to.x); // use directly x,y
         directionString = directionStringFromAzimuth(azimuth); // N, NE, E, SW etc.
 
-        segmentArray.push({   from            : from,
-                              to              : to,
-                              fromLonLat      : fromLonLat,
-                              toLonLat        : toLonLat,
-                              segmentLength   : segmentLength,
-                              azimuth         : azimuth,
-                              directionString : directionString,
-                              cumulativeLength: totalLength
+        segmentArray.push({ from            : from,
+                            to              : to,
+                            fromLonLat      : fromLonLat,
+                            toLonLat        : toLonLat,
+                            segmentLength   : segmentLength,
+                            azimuth         : azimuth,
+                            directionString : directionString,
+                            cumulativeLength: totalLength
                           });
 
         totalLength += segmentLength;
@@ -207,25 +207,24 @@ function onProfilePathComplete(evt)
 
     // now you can use segmentArray to update the graph
     // total length:
-    console.log('Profile line on map:');
-    console.log('Total length [km]: ' + totalLength);
-    console.log('Line segments: ' + String(pointCount-1));
-    for (i = 0; i < segmentArray.length; i++) {
-        console.log('Segment:');
-
-        console.log('  From [WGS84, deg]: ' +
-                       segmentArray[i].fromLonLat.lon +
-                       ' ' +
-                       segmentArray[i].fromLonLat.lat);
-        console.log('  To [WGS84, deg]: ' +
-                       segmentArray[i].toLonLat.lon +
-                       ' ' +
-                       segmentArray[i].toLonLat.lat);
-        console.log('  Segment length [km]: ' + segmentArray[i].segmentLength);
-        console.log('  Azimuth [deg]: ' + segmentArray[i].azimuth*180/Math.PI);
-        console.log('  Direction: ' + segmentArray[i].directionString);
-    }
-    console.log('');
+    // console.log('Profile line on map:');
+    // console.log('Total length [km]: ' + totalLength);
+    // console.log('Line segments: ' + String(pointCount-1));
+    // for (i = 0; i < segmentArray.length; i++) {
+    //     console.log('Segment:');
+    //     console.log('  From [WGS84, deg]: ' +
+    //                    segmentArray[i].fromLonLat.lon +
+    //                    ' ' +
+    //                    segmentArray[i].fromLonLat.lat);
+    //     console.log('  To [WGS84, deg]: ' +
+    //                    segmentArray[i].toLonLat.lon +
+    //                    ' ' +
+    //                    segmentArray[i].toLonLat.lat);
+    //     console.log('  Segment length [km]: ' + segmentArray[i].segmentLength);
+    //     console.log('  Azimuth [deg]: ' + segmentArray[i].azimuth*180/Math.PI);
+    //     console.log('  Direction: ' + segmentArray[i].directionString);
+    // }
+    // console.log('');
 
     var pathCollection = {
         segmentArray : segmentArray,

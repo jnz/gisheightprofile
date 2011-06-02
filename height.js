@@ -68,7 +68,7 @@ function googleElevationCallback(results, status, callback, pathCollection)
         // where the path is changing its direction.
         // this can be used by the chart functions to add additional
         // informations to the chart.
-        for (i = 1; i < segmentArray.length; i++) {
+        for (i = 0; i < segmentArray.length; i++) {
             cIndex = (returnArray.length-1)*segmentArray[i].cumulativeLength /
                          pathCollection.totalLength; // position in the path from 0..1
             cIndex = Math.round(cIndex); // we need an integer for the array index
