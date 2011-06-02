@@ -1,95 +1,73 @@
-var mapPanel = null; // Global GeoExt.MapPanel object.
+var mapPanel = null;        // Global GeoExt.MapPanel object.
+var initViewLat = 51.0;     // initial map center
+var initViewLon = 8.0;
+var initZoomLevel = 6;
 
 /**
  * function: Ext.onReady()
  * description: Gets called by the ExtJS3 framework when the page is ready.
  */
-Ext.onReady(function () {
-    var map = new OpenLayers.Map();
+Ext.onReady(function() {
+    var map = new OpenLayers.Map({
+        allOverlays : true,
+        projection  : new OpenLayers.Projection("EPSG:900913"),
+        controls    : [ new OpenLayers.Control.Navigation(),
+                        new OpenLayers.Control.PanZoomBar(),
+                        new OpenLayers.Control.LayerSwitcher(),
+                      ],
+        units       : "m"
+    });
 
+    // This is our initial base layer
     var gphy = new OpenLayers.Layer.Google("Google Physical", {
-        type: google.maps.MapTypeId.TERRAIN
+        type: google.maps.MapTypeId.TERRAIN,
     });
-    var gmap = new OpenLayers.Layer.Google("Google Streets", {
-        numZoomLevels: 20
-    });
-    var osm = new OpenLayers.Layer.OSM();
-    var ghyb = new OpenLayers.Layer.Google("Google Hybrid", {
-        type: google.maps.MapTypeId.HYBRID,
-        numZoomLevels: 20
-    });
-    var gsat = new OpenLayers.Layer.Google("Google Satellite", {
-        type: google.maps.MapTypeId.SATELLITE,
-        numZoomLevels: 22
-    });
+    map.addLayer(gphy);
 
-    map.addLayers([gphy, gmap, osm, ghyb, gsat]);
-    map.addControl(new OpenLayers.Control.LayerSwitcher());
-    map.addControl(new OpenLayers.Control.OverviewMap({ maximized : true,
-                                                        autoPan   : false }));
-    // map.addControl(new OpenLayers.Control.MousePosition()); // text overlap
+    // transform initial WGS84 coordinates to the current map projection
+    var wgs84proj = new OpenLayers.Projection("EPSG:4326");
+    var mapproj = map.getProjectionObject();
+    initViewPos = new OpenLayers.LonLat(initViewLon, initViewLat);
+    initViewPos.transform(wgs84proj, mapproj);
 
+    //Marker layer
     var markerLayer = new OpenLayers.Layer.Markers("Markers");
     map.addLayer(markerLayer);
 
-    mapPanel = new GeoExt.MapPanel({
-        map    : map,
-        region : 'center',
-        zoom   : 6,
-        tbar   : new Ext.Toolbar(),
-        center : new OpenLayers.LonLat(11.019287, 51.041394).transform(
-                 new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()),
-        items: [{
-             xtype    : "gx_zoomslider",
-             vertical : true,
-             height   : 100,
-             x        : 15,
-             y        : 150,
-             plugins  : new GeoExt.ZoomSliderTip()
+    new Ext.Viewport({
+        layout: "fit",
+        items: [
+        {
+            region : "center",
+            id     : "mappanel",
+            title  : "Map",
+            xtype  : "gx_mappanel",
+            tbar   : new Ext.Toolbar(),
+            zoom   : initZoomLevel,
+            center : initViewPos,
+            map    : map,
         }]
     });
+    mapPanel = Ext.getCmp("mappanel");
 
-    new Ext.Panel({
-        title: "Elevation Profile",
-        layout: 'fit',
-        renderTo: 'gxmap',
-        //autoWidth: true,
-        height: 700,
-        items: [mapPanel]
-    });
-/*
-    // Begin Printing functions
-    var printProvider = new GeoExt.data.PrintProvider({
-        method       : "GET", // "POST" recommended for production use
-        capabilities : printCapabilities, // provide url instead for lazy loading
-        customParams : {
-                           mapTitle : "Map",
-                           comment  : "This shows you the region."
-                       }
-    });
-    var printButton = new Ext.Button({
-        text: 'Print',
-        handler: function() {
-            printDialog = new Ext.Window({
-                title      : "Print Preview",
-                layout     : "fit",
-                width      : 350,
-                autoHeight : true,
-                items      : [{
-                                xtype         : "gx_printmappanel",
-                                sourceMap     : mapPanel,
-                                printProvider : printProvider
-                             }]
-            });
-            printDialog.show();
-        }
-    });
-    printButton.setIcon('ext-3.3.1/examples/shared/icons/fam/book.png');
-   // mapPanel.getTopToolbar().addButton(printButton);
-    // End Printing functions
-*/
-    // Profile draw tool
     initProfileTool(mapPanel);
+
+    var gmap = new OpenLayers.Layer.Google("Google Streets", {
+        numZoomLevels: 20,
+        visibility: false
+    });
+    map.addLayer(gmap);
+
+    var osm = new OpenLayers.Layer.OSM("Open Street Maps");
+    osm.setVisibility(false);
+    map.addLayer(osm);
+
+    var gsat = new OpenLayers.Layer.Google("Google Satellite", {
+        type: google.maps.MapTypeId.SATELLITE,
+        numZoomLevels: 22,
+        visibility: false
+    });
+    map.addLayer(gsat);
 });
 
 /**
