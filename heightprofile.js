@@ -117,9 +117,7 @@ function initProfileTool(mapPanel)
         }
     };
     var style = new OpenLayers.Style();
-    style.addRules([
-            new OpenLayers.Rule({symbolizer: sketchSymbolizers})
-            ]);
+    style.addRules([new OpenLayers.Rule({symbolizer: sketchSymbolizers})]);
     var styleMap = new OpenLayers.StyleMap({"default": style});
 
     // add profile tool to the map panel
@@ -134,7 +132,9 @@ function initProfileTool(mapPanel)
         },
         persist: true,
         handlerOptions: {
-            layerOptions: { styleMap: styleMap }
+            maxVertices    : 26, // we are running out of characters after 26
+            freehandToggle : '',
+            layerOptions   : { styleMap: styleMap }
         }
     });
     mapPanel.map.addControl(profileControl);
