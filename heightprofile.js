@@ -14,6 +14,7 @@ Ext.onReady(function() {
         controls    : [ new OpenLayers.Control.Navigation(),
                         new OpenLayers.Control.PanZoomBar(),
                         new OpenLayers.Control.LayerSwitcher(),
+                        new OpenLayers.Control.OverviewMap({ maximized: true, autoPan: false}),
                       ],
         units       : "m"
     });
@@ -34,6 +35,7 @@ Ext.onReady(function() {
     var markerLayer = new OpenLayers.Layer.Markers("Markers");
     map.addLayer(markerLayer);
 
+    // Use a ful screen layout
     new Ext.Viewport({
         layout: "fit",
         items: [
