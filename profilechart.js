@@ -94,7 +94,7 @@ Ext4.onReady( function () {
 	var maxVertExagText= {
 		xtype:'displayfield',
 		id:'maxVertExagText',
-		fieldLabel: 'Max Vertical Exaggeration',
+		fieldLabel: getI18Nstr("maxexagg", "Max Vertical Exaggeration"),
 		labelAlign:'top',
 		height:50
 	}
@@ -104,7 +104,7 @@ Ext4.onReady( function () {
 	var comboVertExag= {
 		xtype:'combobox',
 		id:'comboVertExag',
-		fieldLabel: 'Choose Vertical Exaggeration',
+		fieldLabel: getI18Nstr("chooseexagg", "Choose Vertical Exaggeration"),
 		labelAlign:'top',
 		height:55,
 		store: vertExagStore,
@@ -138,7 +138,7 @@ Ext4.onReady( function () {
 	var applyVertExagButton= {
 		xtype:'button',
 		id:'applyVertExagButton',
-		text:'apply',
+		text: getI18Nstr("apply", "Apply"),
 		scale:'medium',
 		handler : function() {
 			//the new vertical range gets calculated by the entered value. This value gets added to the minimal y-axis value from numberfield
@@ -174,7 +174,7 @@ Ext4.onReady( function () {
 		return {
 			xtype: 'numberfield',
 			id: 'yStartValueTxt',
-			fieldLabel: 'Y-Axis',
+			fieldLabel: getI18Nstr("yaxis", "Y-Axis"),
 			labelAlign:'top',
 			value: min,
 			maxValue: max-50, //abstract 50 to always show region of at least 50m
@@ -217,7 +217,7 @@ Ext4.onReady( function () {
 		return {
 			xtype: 'displayfield',
 			id: 'vertExagNumberField',
-			fieldLabel: 'Vertical Exaggeration',
+			fieldLabel: getI18Nstr("vertexagg", "Vertical Exaggeration"),
 			labelAlign:'top',
 			height:55,
 			value:1
@@ -228,7 +228,7 @@ Ext4.onReady( function () {
 	var minYAxisText= {
 		xtype:'displayfield',
 		id:'minYAxisText',
-		fieldLabel: 'Min',
+		fieldLabel: getI18Nstr("min", "Min"),
 		labelAlign:'left',
 		labelWidth:35,
 		height:20
@@ -237,7 +237,7 @@ Ext4.onReady( function () {
 	var maxYAxisText= {
 		xtype:'displayfield',
 		id:'maxYAxisText',
-		fieldLabel: 'Max',
+		fieldLabel: getI18Nstr("max", "Max"),
 		labelAlign:'left',
 		labelWidth:35,
 		height:20
@@ -351,7 +351,7 @@ Ext4.onReady( function () {
 				position: 'left',
 				majorTickSteps:9,
 				fields: ['elevation'],
-				title: 'height in m',
+				title: getI18Nstr("heightinm", "Height [m]"),
 				grid: {
 					odd: {
 						opacity: 1,
@@ -367,7 +367,7 @@ Ext4.onReady( function () {
 				maximum: totalLength,
 				fields: ['xAxisLength'],
 				decimals:1,
-				title: 'path in km'
+				title: getI18Nstr("pathinkm", "Path [km]"),
 			}
 			],
 			series: [{
@@ -384,7 +384,7 @@ Ext4.onReady( function () {
 				yField: 'elevation',
 				tips: {
 					trackMouse: true,
-					width: 150,
+					width: 165,
 					height: 50,
 					renderer: function(storeItem, item) {
 						//cut digits
@@ -399,11 +399,13 @@ Ext4.onReady( function () {
 						setMoveableMarker(lat, lon);
 
 						//set digit number, convert to string and replace "." with ","
-						lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
-						lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
+						lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
+						lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
+						//lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
+						//lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
 
 						//tooltip text
-						this.setTitle('Height: ' + elevation + ' m <br> Latitude: '+ lat + '<br> Longitude: '+ lon);
+						this.setTitle(getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': '+ lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': '+ lon);
 					}
 				},
 			},{
@@ -432,7 +434,7 @@ Ext4.onReady( function () {
 				yField: 'markerElevation',
 				tips: {
 					trackMouse: false,
-					width: 150,
+					width: 170,
 					height: 60,
 					renderer: function(storeItem, item) {
 						//cut digits
@@ -450,8 +452,7 @@ Ext4.onReady( function () {
 						lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
 						lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
 						//tooltip text
-						this.setTitle('Direction: '+ storeItem.get('direction') +'<br>Height: ' + elevation + ' m <br> Latitude: '+ lat + '<br> Longitude: '+ lon);
-
+						this.setTitle(getI18Nstr("dir", "Direction") + ': '+ storeItem.get('direction') +'<br>' + getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': '+ lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': '+ lon);
 					}
 				}
 			}]
@@ -484,7 +485,7 @@ Ext4.onReady( function () {
 			y: 100,
 			hidden: false,
 			maximizable: true,
-			title: 'Height Profile',
+			title: getI18Nstr("heightprofile", "Height Profile"),
 			renderTo: Ext4.getBody(),
 			layout: 'fit',
 			items:[{

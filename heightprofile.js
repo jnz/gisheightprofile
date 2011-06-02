@@ -8,6 +8,9 @@ var initZoomLevel = 6;
  * description: Gets called by the ExtJS3 framework when the page is ready.
  */
 Ext.onReady(function() {
+    // Init i18n settings
+    setLocale(GeoExt.Lang.locale);
+
     var map = new OpenLayers.Map({
         allOverlays : true,
         projection  : new OpenLayers.Projection("EPSG:900913"),
@@ -20,7 +23,7 @@ Ext.onReady(function() {
     });
 
     // This is our initial base layer
-    var gphy = new OpenLayers.Layer.Google("Google Physical", {
+    var gphy = new OpenLayers.Layer.Google(getI18Nstr("googlephysical", "Google Physical"), {
         type: google.maps.MapTypeId.TERRAIN,
     });
     map.addLayer(gphy);
@@ -42,7 +45,7 @@ Ext.onReady(function() {
         {
             region : "center",
             id     : "mappanel",
-            title  : "Map",
+            title  : getI18Nstr("mapcaption", "Map"),
             xtype  : "gx_mappanel",
             tbar   : new Ext.Toolbar(),
             zoom   : initZoomLevel,
@@ -63,17 +66,17 @@ Ext.onReady(function() {
     mapPanel.getTopToolbar().addFill(); // right align the search box
     mapPanel.getTopToolbar().add(geoNameSearchCombo);
 
-    var gmap = new OpenLayers.Layer.Google("Google Streets", {
+    var gmap = new OpenLayers.Layer.Google(getI18Nstr("googlestreets", "Google Streets"), {
         numZoomLevels: 20,
         visibility: false
     });
     map.addLayer(gmap);
 
-    var osm = new OpenLayers.Layer.OSM("Open Street Maps");
+    var osm = new OpenLayers.Layer.OSM(getI18Nstr("osm", "Open Street Maps"));
     osm.setVisibility(false);
     map.addLayer(osm);
 
-    var gsat = new OpenLayers.Layer.Google("Google Satellite", {
+    var gsat = new OpenLayers.Layer.Google(getI18Nstr("googlesat", "Google Satellite"), {
         type: google.maps.MapTypeId.SATELLITE,
         numZoomLevels: 22,
         visibility: false
@@ -141,17 +144,17 @@ function initProfileTool(mapPanel)
 
     var toggleGroup = "measure controls";
     var profileButton = new Ext.Button({
-        text: 'Draw height profile',
-        enableToggle: true,
-        toggleGroup: toggleGroup,
-        toggleHandler: function (item, pressed) {
-            clearAllMarkers();
-            if (pressed) {
-                profileControl.activate();
-            } else {
-                profileControl.deactivate();
-            }
-        }
+        text          : getI18Nstr("profiletool", "Height Profile Tool"),
+        enableToggle  : true,
+        toggleGroup   : toggleGroup,
+        toggleHandler : function (item, pressed) {
+                            clearAllMarkers();
+                            if (pressed) {
+                                profileControl.activate();
+                            } else {
+                                profileControl.deactivate();
+                            }
+                        }
     });
     profileButton.setIcon('img/map_edit.png');
     mapPanel.getTopToolbar().addButton(profileButton);
