@@ -34,9 +34,24 @@ Ext.onReady(function() {
     initViewPos = new OpenLayers.LonLat(initViewLon, initViewLat);
     initViewPos.transform(wgs84proj, mapproj);
 
-    //Marker layer
-    var markerLayer = new OpenLayers.Layer.Markers("Markers");
+    // Marker layer
+    var markerLayer = new OpenLayers.Layer.Markers("Markers", {
+        displayInLayerSwitcher : false
+    });
     map.addLayer(markerLayer);
+
+    // Profile line layer
+    var renderer = OpenLayers.Util.getParameters(window.location.href).renderer;
+    renderer = (renderer) ? [renderer] : OpenLayers.Layer.Vector.prototype.renderers;
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillOpacity = 0.2;
+    layer_style.graphicOpacity = 1;
+    var vectorLayer = new OpenLayers.Layer.Vector("Path", {
+        style                  : layer_style,
+        renderers              : renderer,
+        displayInLayerSwitcher : false
+    });
+    map.addLayer(vectorLayer);
 
     // Use a ful screen layout
     new Ext.Viewport({
@@ -133,7 +148,7 @@ function initProfileTool(mapPanel)
                 onProfilePathPartial(evt);
             }
         },
-        persist: true,
+        persist: false,
         handlerOptions: {
             maxVertices    : 26, // we are running out of characters after 26
             freehandToggle : '',
@@ -244,6 +259,7 @@ function onProfilePathComplete(evt)
     };
     getHeightAlongPath(pathCollection, function(resultsArray, pathCollection)
                                        {
+                                           drawHeightPath(resultsArray, pathCollection);
                                            window.closeProfileWindow();
                                            drawChart(resultsArray, pathCollection);
                                            window.createProfileWindow();
@@ -253,6 +269,54 @@ function onProfilePathComplete(evt)
 function onProfilePathPartial(evt)
 {
     // we could do something cool and dynamic here
+}
+
+/**
+ * function: drawHeightPath(resultsArray, pathCollection)
+ * description: Draws the geodetic line according to the
+ * drawn path.
+ * parameters:
+ * -    resultsArray   : Contains the lat, lon and height along the path
+ * -    pathCollection : The original path segments, drawn by the user
+ */
+function drawHeightPath(resultsArray, pathCollection)
+{
+    var vectorLayerArray = mapPanel.map.getLayersByName("Path");
+    if (vectorLayerArray.length != 1) {
+        console.log('No path layer found');
+        return;
+    }
+    var vectorLayer = vectorLayerArray[0];
+    vectorLayer.destroyFeatures();
+
+    var style_line = {
+        strokeColor     : "#FF1111",
+        strokeWidth     : 6,
+        strokeDashstyle : "solid",
+        strokeOpacity   : 0.4,
+        pointRadius     : 6,
+        pointerEvents   : "visiblePainted"
+    };
+
+    // convert wgs84 input from function arguments to current system
+    var nativeProj  = mapPanel.map.getProjectionObject();
+    var wgs84       = new OpenLayers.Projection("EPSG:4326");
+    var pWGS84;
+
+    // create a line feature from a list of points
+    var pointList = [];
+    for(var i=0; i<resultsArray.length; i++) {
+        // we only draw every 20th point if it is not a breakpoint
+        if(i % 20 == 0 || resultsArray[i].breakPoint != null) {
+            pWGS84 = new OpenLayers.LonLat(resultsArray[i].lon, resultsArray[i].lat);
+            pWGS84.transform(wgs84, nativeProj);
+            pointList.push(new OpenLayers.Geometry.Point(pWGS84.lon, pWGS84.lat));
+        }
+    }
+    var lineFeature = new OpenLayers.Feature.Vector(
+            new OpenLayers.Geometry.LineString(pointList), null, style_line);
+
+    vectorLayer.addFeatures([lineFeature]);
 }
 
 /**
@@ -287,7 +351,8 @@ function addMarkerToMap(x, y, markerIndex)
 
 /**
  * function: clearAllMarkers()
- * description: Remove all markers from the marker layer.
+ * description: Remove all markers from the marker layer
+ * and remove all drawings from the path vector layer.
  */
 function clearAllMarkers()
 {

@@ -108,10 +108,81 @@ var g_i18n_de =
     "northwest"      : "Nord-West",
 };
 
+// Spanish translations
+var g_i18n_sp =
+{
+    "numsep"         : ".",
+    "googlephysical" : "Google Físico",
+    "googlestreets"  : "Google Rutas",
+    "googlesat"      : "Google Satelital",
+    "osm"            : "Open Street Maps",
+    "mapcaption"     : "Mapa",
+    "profiletool"    : "Herramienta para perfiles transversales de altura",
+    "heightprofile"  : "Perfil de altura",
+    "chooseexagg"    : "Seleccionar exageración vertical",
+    "maxexagg"       : "Exageración vertical máxima",
+    "vertexagg"      : "Exageración vertical",
+    "heightinm"      : "Altura [m]",
+    "pathinkm"       : "Ruta [km]",
+    "yaxis"          : "Eje Y",
+    "min"            : "Mín",
+    "max"            : "Máx",
+    "apply"          : "Aplicar",
+    "height"         : "Altura",
+    "lat"            : "Latitud",
+    "lon"            : "Longitud",
+    "dir"            : "Dirección",
+    "north"          : "Norte",
+    "northeast"      : "Noreste",
+    "east"           : "Este",
+    "southeast"      : "Sureste",
+    "south"          : "Sur",
+    "southwest"      : "Suroeste",
+    "west"           : "Oeste",
+    "northwest"      : "Noroeste",
+};
+
+// French translations
+var g_i18n_fr =
+{
+    "numsep"         : ".",
+    "googlephysical" : "Google Physique",
+    "googlestreets"  : "Google Routes",
+    "googlesat"      : "Google Satellite",
+    "osm"            : "Open Street Maps",
+    "mapcaption"     : "Carte",
+    "profiletool"    : "Outil de profil de hauteur",
+    "heightprofile"  : "Profil de hauteur",
+    "chooseexagg"    : "Choisir exagération verticale",
+    "maxexagg"       : "Maximale exagération verticale",
+    "vertexagg"      : "Exagération verticale",
+    "heightinm"      : "Hauteur [m]",
+    "pathinkm"       : "Route [km]",
+    "yaxis"          : "Axe Y",
+    "min"            : "Min",
+    "max"            : "Max",
+    "apply"          : "Appliquer",
+    "height"         : "Hauteur",
+    "lat"            : "Latitude",
+    "lon"            : "Longitude",
+    "dir"            : "Direction",
+    "north"          : "Nord",
+    "northeast"      : "Nord-est",
+    "east"           : "Est",
+    "southeast"      : "Sur-est",
+    "south"          : "Sud",
+    "southwest"      : "Sud-ouest",
+    "west"           : "Ouest",
+    "northwest"      : "Nord-ouest",
+};
+
+
 // Translation registry
 var g_i18n =
 {
     "en": g_i18n_en,
     "de": g_i18n_de,
+    "fr": g_i18n_fr,
+    "sp": g_i18n_sp,
 };
 
