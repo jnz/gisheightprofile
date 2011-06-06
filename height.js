@@ -62,44 +62,43 @@ function getHeightAlongPath(pathCollection, callback)
  */
 function googleElevationCallback(results, status, callback, pathCollection)
 {
-    if (status == google.maps.ElevationStatus.OK) {
-        var i;
-        var cIndex;
-        var segmentArray = pathCollection.segmentArray;
-        var returnArray = new Array(results.length);
-        // the returnArray is filled with the height data
-        for (i = 0; i < results.length; i++) {
-            returnArray[i] = { lat        : results[i].location.lat(),
-                               lon        : results[i].location.lng(),
-                               elevation  : results[i].elevation,
-                               breakPoint : null };
-        }
-        // now we set the breakPoint attribute for positions
-        // where the path is changing its direction.
-        // this can be used by the chart functions to add additional
-        // informations to the chart.
-        for (i = 0; i < segmentArray.length; i++) {
-            cIndex = (returnArray.length-1)*segmentArray[i].cumulativeLength /
-                         pathCollection.totalLength; // position in the path from 0..1
-            cIndex = Math.round(cIndex); // we need an integer for the array index
-
-            returnArray[cIndex].breakPoint = { azimuth         : segmentArray[i].azimuth,
-                                               directionString : segmentArray[i].directionString,
-                                               index           : i // segment index
-                                             };
-        }
-        // set the breakpoint attribute of the last point,
-        // but do net set azimuth or directionString, as they make no sense here
-        returnArray[returnArray.length-1].breakPoint = {
-            azimuth         : 0,
-            directionString : "",
-            index           : i
-        };
-        callback(returnArray, pathCollection);
-    }
-    else {
+    if (status != google.maps.ElevationStatus.OK) {
         callback(null, null);
     }
+
+    var i;
+    var cIndex;
+    var segmentArray = pathCollection.segmentArray;
+    var returnArray = new Array(results.length);
+    // the returnArray is filled with the height data
+    for (i = 0; i < results.length; i++) {
+        returnArray[i] = { lat        : results[i].location.lat(),
+                           lon        : results[i].location.lng(),
+                           elevation  : results[i].elevation,
+                           breakPoint : null };
+    }
+    // now we set the breakPoint attribute for positions
+    // where the path is changing its direction.
+    // this can be used by the chart functions to add additional
+    // informations to the chart.
+    for (i = 0; i < segmentArray.length; i++) {
+        cIndex = (returnArray.length-1)*segmentArray[i].cumulativeLength /
+            pathCollection.totalLength; // position in the path from 0..1
+        cIndex = Math.round(cIndex); // we need an integer for the array index
+
+        returnArray[cIndex].breakPoint = { azimuth         : segmentArray[i].azimuth,
+                                           directionString : segmentArray[i].directionString,
+                                           index           : i // segment index
+                                         };
+    }
+    // set the breakpoint attribute of the last point,
+    // but do net set azimuth or directionString, as they make no sense here
+    returnArray[returnArray.length-1].breakPoint = {
+        azimuth         : 0,
+        directionString : "",
+        index           : i
+    };
+    callback(returnArray, pathCollection);
 }
 
 /**
