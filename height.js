@@ -61,8 +61,7 @@ function googleElevationCallback(results, status, callback, pathCollection)
             returnArray[i] = { lat        : results[i].location.lat(),
                                lon        : results[i].location.lng(),
                                elevation  : results[i].elevation,
-                               breakPoint : null
-                             };
+                               breakPoint : null };
         }
         // now we set the breakPoint attribute for positions
         // where the path is changing its direction.
@@ -82,6 +81,70 @@ function googleElevationCallback(results, status, callback, pathCollection)
     }
     else {
         callback(null, null);
+    }
+}
+
+/**
+ * function: getPathSamplePoints(latStart, lonStart, latEnd, lonEnd, samplepoints)
+ * description: Gets coordinates between two points. Samplepoints determines how
+ * many points are calculated along the geodesic.
+ * parameters:
+ * -    latStart:  latitude of starting point
+ * -    lonStart:  longitude of starting point
+ * -    latEnd:    latitude of end point
+ * -    lonEnd:    longitude of end point
+ *
+ * return: coordinate array
+ */
+function getPathSamplePoints(latStart, lonStart, latEnd, lonEnd, samplepoints)
+{
+    var fromLonLat     = new OpenLayers.LonLat(lonStart, latStart);
+    var toLonLat       = new OpenLayers.LonLat(lonEnd, latEnd);
+    var currentLonLat  = new OpenLayers.LonLat(lonStart, latStart);
+    var totalLength    = OpenLayers.Util.distVincenty(fromLonLat, toLonLat);
+    var segment        = totalLength/samplepoints;
+    var i;
+    var pathArray      = [];
+
+    var dx = (lonEnd - lonStart)/totalLength;
+    var dy = (latEnd - latStart)/totalLength;
+
+    for (i = 0; i < samplepoints; i++)
+    {
+        pathArray.push(currentLonLat.lat);
+        pathArray.push(currentLonLat.lon);
+        currentLonLat = currentLonLat.add(dx, dy);
+    }
+}
+
+function mapquestRequest(latStart, lonStart, latEnd, lonEnd)
+{
+    var mapquestURL = 'http://open.mapquestapi.com';
+    var urlreq = mapquestURL + '/elevation/v1/getElevationProfile?callback=mapquestResponse&shapeFormat=raw';
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    var i;
+
+    urlreq += '&latLngCollection=';
+    // urlreq += latStart + ',' + lonStart + ',' + latEnd + ',' + lonEnd;
+    var pathArray = getPathSamplePoints(latStart, lonStart, latEnd, lonEnd, 10);
+    urlreq += pathArray[0];
+    for (i = 1; i < pathArray.length; i++) {
+        urlreq += "," + pathArray[i];
+    }
+
+    script.src = urlreq;
+    document.body.appendChild(script);
+}
+
+function mapquestResponse(response)
+{
+    var path = response.elevationProfile;
+    var html = '';
+    var i = 0;
+    for(; i < path.length; i++) {
+        // path[i].height;
+        // path[i].distance;
     }
 }
 
