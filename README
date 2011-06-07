@@ -20,11 +20,7 @@ Extract the following files to your project directory:
     GeoExt-1.0.zip        > gisheightprofile/GeoExt
     OpenLayers-2.10.zip   > gisheightprofile/OpenLayers
     ext-3.3.1.zip         > gisheightprofile/ext-3.3.1
-    ext-4.0.0-gpl.zip     > gisheightprofile/ext-4.0.0
-
-Copy jQuery to the project directory:
-
-    jquery-1.6.js         > gisheightprofile/jquery-1.6.js
+    ext-4.0.1-gpl.zip     > gisheightprofile/ext-4.0.1
 
 Coding style
 ------------
