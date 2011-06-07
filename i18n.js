@@ -112,9 +112,6 @@ var g_i18n_de =
     "nan"            : "Wert ist keine Zahl",
     "biggerthan0"    : "Zahl muss größer als Null sein",
     "biggerthanmax"  : "Zahl ist größer als die max. vertikale Überhöhung",
-    "nan"            : "Value is not a number",
-    "biggerthan0"    : "Value must be bigger than 0",
-    "biggerthanmax"  : "Value is bigger than max vertical exaggeration",
 };
 
 // Spanish translations
@@ -186,6 +183,9 @@ var g_i18n_fr =
     "southwest"      : "Sud-ouest",
     "west"           : "Ouest",
     "northwest"      : "Nord-ouest",
+    "nan"            : "Value is not a number",
+    "biggerthan0"    : "Value must be bigger than 0",
+    "biggerthanmax"  : "Value is bigger than max vertical exaggeration",
 };
 
 

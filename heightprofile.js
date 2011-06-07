@@ -2,6 +2,10 @@ var mapPanel = null;        // Global GeoExt.MapPanel object.
 var initViewLat = 51.0;     // initial map center
 var initViewLon = 8.0;
 var initZoomLevel = 6;
+// When drawing the geodetic line, every GEODETIC_LINE_SMOOTHERth point is used.
+// GEODETIC_LINE_SMOOTHER = 1 would be a very smooth curve (but slow in drawing).
+// GEODETIC_LINE_SMOOTHER = 20 would be a edged curve (but fast in drawing).
+var GEODETIC_LINE_SMOOTHER = 10;
 
 /**
  * function: Ext.onReady()
@@ -13,7 +17,7 @@ Ext.onReady(function() {
 
     var map = new OpenLayers.Map({
         allOverlays : true,
-        projection  : new OpenLayers.Projection("EPSG:900913"),
+        projection  : new OpenLayers.Projection("EPSG:900913"), // google web mercator projection
         controls    : [ new OpenLayers.Control.Navigation(),
                         new OpenLayers.Control.PanZoomBar(),
                         new OpenLayers.Control.LayerSwitcher(),
@@ -259,6 +263,10 @@ function onProfilePathComplete(evt)
     };
     getHeightAlongPath(pathCollection, function(resultsArray, pathCollection)
                                        {
+                                           if(resultsArray == null)
+                                           {
+                                               return;
+                                           }
                                            drawHeightPath(resultsArray, pathCollection);
                                            window.closeProfileWindow();
                                            drawChart(resultsArray, pathCollection);
@@ -306,8 +314,8 @@ function drawHeightPath(resultsArray, pathCollection)
     // create a line feature from a list of points
     var pointList = [];
     for(var i=0; i<resultsArray.length; i++) {
-        // we only draw every 20th point if it is not a breakpoint
-        if(i % 20 == 0 || resultsArray[i].breakPoint != null) {
+        // we only draw every GEODETIC_LINE_SMOOTHERth point if it is not a breakpoint
+        if(i % GEODETIC_LINE_SMOOTHER == 0 || resultsArray[i].breakPoint != null) {
             pWGS84 = new OpenLayers.LonLat(resultsArray[i].lon, resultsArray[i].lat);
             pWGS84.transform(wgs84, nativeProj);
             pointList.push(new OpenLayers.Geometry.Point(pWGS84.lon, pWGS84.lat));

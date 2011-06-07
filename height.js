@@ -1,3 +1,8 @@
+// Height Provider:
+// - "google" (default)     http://code.google.com/intl/en-EN/apis/maps/documentation/javascript/
+// - "mapquest"             http://developer.mapquest.com/web/products/open/elevation-service
+var heightProvider = "mapquest";
+
 /**
  * function: getHeightAlongPath(pointArray, callback)
  * description: Gets the height from a path
@@ -20,8 +25,24 @@
  */
 function getHeightAlongPath(pathCollection, callback)
 {
-    mapquestRequest(pathCollection, callback);
+    if(heightProvider == "mapquest")
+        getHeightAlongPathMapQuest(pathCollection, callback);
+    else // default provider: "google"
+        getHeightAlongPathGoogle(pathCollection, callback);
+}
 
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+/* +++++++++++++++++++++++++++ Google Maps API ++++++++++++++++++++++++++++++++++++ */
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+var HEIGHT_PATH_SAMPLES = 200;
+
+/**
+ * function: getHeightAlongPathGoogle(pathCollection, callback)
+ * description: Gets the heights with the Google Maps API (see getHeightAlongPath
+ * for details).
+ */
+function getHeightAlongPathGoogle(pathCollection, callback)
+{
     // Create an ElevationService.
     var elevator = new google.maps.ElevationService();
     var i;
@@ -41,7 +62,7 @@ function getHeightAlongPath(pathCollection, callback)
     // Ask for 256 samples along that path.
     var pathRequest = {
         'path'    : path,
-        'samples' : 200
+        'samples' : HEIGHT_PATH_SAMPLES
     };
 
     // Initiate the path request.
@@ -101,6 +122,35 @@ function googleElevationCallback(results, status, callback, pathCollection)
     callback(returnArray, pathCollection);
 }
 
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+/* +++++++++++++++++++++++++++ MapQuest API +++++++++++++++++++++++++++++++++++++++ */
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+var HEIGHT_PATH_SAMPLES_MAPQUEST = 100;
+var MAPQUEST_PRECISION = 5; // Don't change this, or else you need to change the compression algorithm too
+
+// The following variables are used to store data until the MapQuest service
+// response arived.
+var g_mapquest_callback = null;
+var g_mapquest_pathcollection = null;
+
+/**
+ * function: getHeightAlongPathMapQuest(pathCollection, callback)
+ * description: Gets the heights with the MapQuest API (see getHeightAlongPath
+ * for details).
+ */
+function getHeightAlongPathMapQuest(pathCollection, callback)
+{
+    // Store the pathCollection and callback function in a global variable until
+    // the async MapQuest response is available.
+    g_mapquest_pathcollection = pathCollection;
+    g_mapquest_callback = function(returnArray)
+                          {
+                              callback(returnArray, pathCollection);
+                          };
+    mapquestRequest(pathCollection);
+}
+
 /**
  * function: getPathSamplePoints(pathCollection)
  * description: Gets sampled coordinates along the path.
@@ -119,7 +169,7 @@ function googleElevationCallback(results, status, callback, pathCollection)
  */
 function getPathSamplePoints(pathCollection)
 {
-    var samplepoints = 100;
+    var samplepoints = HEIGHT_PATH_SAMPLES_MAPQUEST;
     var singleSegment = pathCollection.totalLength/samplepoints; // unit [km]
     var pathArray = [];
     var segmentArray = pathCollection.segmentArray;
@@ -136,8 +186,8 @@ function getPathSamplePoints(pathCollection)
         lonEnd   = segmentArray[i].toLonLat.lon;
 
         // naive non-geodetic curve:
-        var dx = (lonEnd - lonStart)/segmentArray[i].segmentLength;
-        var dy = (latEnd - latStart)/segmentArray[i].segmentLength;
+        var dx = (lonEnd - lonStart)*(singleSegment/pathCollection.totalLength);
+        var dy = (latEnd - latStart)*(singleSegment/pathCollection.totalLength);
 
         pointsInSegment = Math.floor(segmentArray[i].segmentLength/singleSegment);
         var currentLonLat = new OpenLayers.LonLat(lonStart, latStart);
@@ -148,10 +198,20 @@ function getPathSamplePoints(pathCollection)
             currentLonLat = currentLonLat.add(dx, dy);
         }
     }
+    pathArray.push(latEnd);
+    pathArray.push(lonEnd);
     return pathArray;
 }
 
-var MAPQUEST_PRECISION = 5;
+/**
+ * function: mapquestRequest(pathCollection, callback)
+ * description: Starts a MapQuest Elevation API call.
+ * This is a async function. After completion, the callback function returns the
+ * results.
+ * parameters:
+ * -    pathCollection:     Path segments from the user
+ * -    callback:           Callback function of the original caller
+ */
 function mapquestRequest(pathCollection, callback)
 {
     var mapquestURL = 'http://open.mapquestapi.com';
@@ -168,19 +228,69 @@ function mapquestRequest(pathCollection, callback)
     document.body.appendChild(script);
 }
 
+/**
+ * function: mapquestResponse(response)
+ * description: Called by MapQuest, when the function call is complete.
+ * parameters:
+ * -    response:       Data provided by MapQuest (see MapQuest API docu)
+ */
 function mapquestResponse(response)
 {
+    var i;
+    if (response.info.statuscode != 0) {
+        var errstr = "";
+        for (i = 0; i<response.info.messages.length; i++) {
+            errstr += response.info.messages[i] + "\n";
+        };
+        console.log(errstr);
+        Ext.Msg.alert('MapQuest error', errstr);
+        g_mapquest_callback(null);
+    }
     var points = decompress(response.shapePoints, MAPQUEST_PRECISION);
     var path = response.elevationProfile;
     var html = '';
+    // path[i].height;
+    // path[i].distance;
 
-    for(var i = 0; i < path.length; i++) {
-        console.log("Height: " + path[i].height + "\n");
-        // path[i].height;
-        // path[i].distance;
+    var cIndex;
+    var segmentArray = g_mapquest_pathcollection.segmentArray;
+    var returnArray = new Array(path.length);
+    // the returnArray is filled with the height data
+    for (i = 0; i < path.length; i++) {
+        returnArray[i] = { lat        : points[(i*2)],   // lat
+                           lon        : points[(i*2)+1], // lon
+                           elevation  : path[i].height,  // height
+                           breakPoint : null };
     }
+    // now we set the breakPoint attribute for positions
+    // where the path is changing its direction.
+    // this can be used by the chart functions to add additional
+    // informations to the chart.
+    for (i = 0; i < segmentArray.length; i++) {
+        cIndex = (returnArray.length-1)*segmentArray[i].cumulativeLength /
+            g_mapquest_pathcollection.totalLength; // position in the path from 0..1
+        cIndex = Math.round(cIndex); // we need an integer for the array index
+
+        returnArray[cIndex].breakPoint = { azimuth         : segmentArray[i].azimuth,
+                                           directionString : segmentArray[i].directionString,
+                                           index           : i // segment index
+                                         };
+    }
+    // set the breakpoint attribute of the last point,
+    // but do net set azimuth or directionString, as they make no sense here
+    returnArray[returnArray.length-1].breakPoint = {
+        azimuth         : 0,
+        directionString : "",
+        index           : i
+    };
+    g_mapquest_callback(returnArray);
 }
 
+/**
+ * function: decompress(encoded, precision)
+ * description: MapQuest decompression for coordinates.
+ * See: http://open.mapquestapi.com/common/encodedecode.html
+ */
 function decompress(encoded, precision)
 {
     precision = Math.pow(10, -precision);
@@ -209,6 +319,11 @@ function decompress(encoded, precision)
     return array;
 }
 
+/**
+ * function: compress(points, precision)
+ * description: MapQuest compression for coordinates.
+ * See: http://open.mapquestapi.com/common/encodedecode.html
+ */
 function compress(points, precision)
 {
    var oldLat = 0, oldLng = 0, len = points.length, index = 0;
@@ -229,7 +344,13 @@ function compress(points, precision)
    return encoded;
 }
 
-function encodeNumber(num) {
+/**
+ * function: encodeNumber(num)
+ * description: MapQuest compression for coordinates.
+ * See: http://open.mapquestapi.com/common/encodedecode.html
+ */
+function encodeNumber(num)
+{
     var num = num << 1;
     if (num < 0) {
         num = ~(num);
