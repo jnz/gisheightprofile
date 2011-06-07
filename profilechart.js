@@ -114,11 +114,10 @@ Ext4.onReady( function () {
 		validator: function(value) {
 			if (isNaN(value)) {
 				Ext4.getCmp('applyVertExagButton').setDisabled(true);
-				return 'Value is not a number';
-
+				return getI18Nstr("nan", "Value is not a number");
 			} else if( parseFloat(value)<=0) {
 				Ext4.getCmp('applyVertExagButton').setDisabled(true);
-				return 'Value must be bigger than 0';
+				return getI18Nstr("biggerthan0", "Value must be bigger than 0");
 			} else if (parseFloat(value)<=maxVertExag && parseFloat(value)>0) {
 				Ext4.getCmp('applyVertExagButton').setDisabled(false);
 				return true;
@@ -127,8 +126,7 @@ Ext4.onReady( function () {
 				return true;
 			} else {
 				Ext4.getCmp('applyVertExagButton').setDisabled(true);
-				return 'Value is bigger than max vertical exaggeration'
-
+				return getI18Nstr("biggerthanmax", "Value is bigger than max vertical exaggeration");
 			}
 		}
 	}
@@ -449,8 +447,8 @@ Ext4.onReady( function () {
 						setMoveableMarker(lat, lon);
 
 						//set digit number, convert to string and replace "." with ","
-						lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
-						lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
+						lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
+						lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
 						//tooltip text
 						this.setTitle(getI18Nstr("dir", "Direction") + ': '+ storeItem.get('direction') +'<br>' + getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': '+ lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': '+ lon);
 					}

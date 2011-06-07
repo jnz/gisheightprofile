@@ -72,6 +72,9 @@ var g_i18n_en =
     "southwest"      : "South-West",
     "west"           : "West",
     "northwest"      : "North-West",
+    "nan"            : "Value is not a number",
+    "biggerthan0"    : "Value must be bigger than 0",
+    "biggerthanmax"  : "Value is bigger than max vertical exaggeration",
 };
 
 // German translations
@@ -106,6 +109,12 @@ var g_i18n_de =
     "southwest"      : "Süd-West",
     "west"           : "Westen",
     "northwest"      : "Nord-West",
+    "nan"            : "Wert ist keine Zahl",
+    "biggerthan0"    : "Zahl muss größer als Null sein",
+    "biggerthanmax"  : "Zahl ist größer als die max. vertikale Überhöhung",
+    "nan"            : "Value is not a number",
+    "biggerthan0"    : "Value must be bigger than 0",
+    "biggerthanmax"  : "Value is bigger than max vertical exaggeration",
 };
 
 // Spanish translations
@@ -140,6 +149,9 @@ var g_i18n_sp =
     "southwest"      : "Suroeste",
     "west"           : "Oeste",
     "northwest"      : "Noroeste",
+    "nan"            : "Value is not a number",
+    "biggerthan0"    : "Value must be bigger than 0",
+    "biggerthanmax"  : "Value is bigger than max vertical exaggeration",
 };
 
 // French translations
