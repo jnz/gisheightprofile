@@ -432,6 +432,7 @@ Ext4.onReady( function () {
 				yField: 'markerElevation',
 				tips: {
 					trackMouse: false,
+					autoScroll:true,
 					width: 170,
 					height: 60,
 					renderer: function(storeItem, item) {
@@ -449,8 +450,15 @@ Ext4.onReady( function () {
 						//set digit number, convert to string and replace "." with ","
 						lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
 						lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
+
 						//tooltip text
-						this.setTitle(getI18Nstr("dir", "Direction") + ': '+ storeItem.get('direction') +'<br>' + getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': '+ lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': '+ lon);
+						if (storeItem.get('direction')!="") {
+							this.setTitle(getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': '+ lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': '+ lon  +'<br>' + getI18Nstr("dir", "Direction") + ': '+ storeItem.get('direction') );
+							
+						} else {
+							this.setTitle(getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': '+ lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': '+ lon+'<br> 	<br>' );
+
+						}
 					}
 				}
 			}]
