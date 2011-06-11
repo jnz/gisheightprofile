@@ -112,19 +112,26 @@ Ext4.onReady( function () {
 		displayField: 'dispVal',
 		valueField: 'value',
 		validator: function(value) {
+			//input validation for vertExag combobox
+			//check if value is a number
 			if (isNaN(value)) {
 				Ext4.getCmp('applyVertExagButton').setDisabled(true);
 				return getI18Nstr("nan", "Value is not a number");
-			} else if( parseFloat(value)<=0) {
+			} 
+			//check if value is bigger than 0
+			else if( parseFloat(value)<=0) {
 				Ext4.getCmp('applyVertExagButton').setDisabled(true);
 				return getI18Nstr("biggerthan0", "Value must be bigger than 0");
-			} else if (parseFloat(value)<=maxVertExag && parseFloat(value)>0) {
+			} 
+			else if (parseFloat(value)<=maxVertExag && parseFloat(value)>0) {
 				Ext4.getCmp('applyVertExagButton').setDisabled(false);
 				return true;
 			} else if (value=="") {
 				Ext4.getCmp('applyVertExagButton').setDisabled(true);
 				return true;
-			} else {
+			} 
+			//else value is bigger than maximal vertExag
+			else {
 				Ext4.getCmp('applyVertExagButton').setDisabled(true);
 				return getI18Nstr("biggerthanmax", "Value is bigger than max vertical exaggeration");
 			}
@@ -153,10 +160,7 @@ Ext4.onReady( function () {
 				elevationStore.loadData(filterDataByMinValue(parseInt(Ext4.getCmp('yStartValueTxt').getValue())));
 				Ext4.getCmp('vertExagNumberField').setValue(comboValue);
 				currentMaxElevation=vertRange;
-			} else {
-				//alert('new vertical range below maximum elevation');
-				//obj.select('---');
-			}
+			} 
 		}
 	}
 	/**
@@ -177,7 +181,6 @@ Ext4.onReady( function () {
 			value: min,
 			maxValue: max-50, //abstract 50 to always show region of at least 50m
 			minValue: min,
-			//region:'south',
 			height:55,
 			disableKeyFilter:true,
 			keyNavEnabled: true,
@@ -194,7 +197,6 @@ Ext4.onReady( function () {
 					fn: function(obj, newVal, oldVal) {
 						Ext4.getCmp('chartContainer').removeAll();
 						//draw new axis with new min-value
-						//createElevationChart(parseInt(newVal), maxElevation);
 						createElevationChart(parseInt(newVal), currentMaxElevation);
 						//filter data, that is smaller than new min value and display it in chart
 						elevationStore.loadData(filterDataByMinValue(parseInt(newVal)));
@@ -248,7 +250,6 @@ Ext4.onReady( function () {
 		bodyStyle: {
 			background: '#dfe8f6 '
 		},
-
 		border: true,
 		region:'north',
 		layout: {
@@ -263,7 +264,6 @@ Ext4.onReady( function () {
 	var mainControlPanel= {
 		id:'mainControlPanel',
 		xtype:'container',
-		//style: 'border: 1px solid #666',
 		region:'center',
 		layout: {
 			type: 'vbox',
@@ -279,7 +279,6 @@ Ext4.onReady( function () {
 		bodyStyle: {
 			background: '#dfe8f6 '
 		},
-
 		border: true,
 		region:'south',
 		layout: {
@@ -312,9 +311,8 @@ Ext4.onReady( function () {
 						Ext4.getCmp('vertExagNumberField').setValue(vertExag);
 						Ext4.getCmp('maxVertExagText').setValue(Math.floor(calcMaxVertExag()*Math.pow(10,2))/Math.pow(10,2));
 						Ext4.getCmp('comboVertExag').validate();
-
 						//apply filter to combobox
-						//clear filter
+						//before applying, clear filter
 						var ds = vertExagStore;
 						if (ds.realSnapshot && ds.realSnapshot != ds.snapshot) {
 							ds.snapshot = ds.realSnapshot;
@@ -327,18 +325,16 @@ Ext4.onReady( function () {
 								return true;
 							} else {
 								return false;
-
 							}
 						});
 						ds.realSnapshot = ds.snapshot;
 						ds.snapshot = ds.data;
-
 					}
 				}
 			},
 			shadow: false,
 			theme: 'Blue',
-			axes: [{
+			axes: [{//y-axis config
 				type: 'Numeric',
 				id:'yValAxis',
 				xtype: 'Axis',
@@ -359,7 +355,7 @@ Ext4.onReady( function () {
 					}
 				}
 			}
-			,{
+			,{//x-axis config
 				type: 'Numeric',
 				position: 'bottom',
 				maximum: totalLength,
@@ -368,8 +364,8 @@ Ext4.onReady( function () {
 				title: getI18Nstr("pathinkm", "Path [km]"),
 			}
 			],
-			series: [{
-				type: 'area',
+			series: [{//chart data
+				type: 'area',//elevation data as area series
 				highlight:true,
 				axis: 'left',
 				grid:true,
@@ -387,26 +383,20 @@ Ext4.onReady( function () {
 					renderer: function(storeItem, item) {
 						//cut digits
 						var elevation=Math.floor(storeItem.get('displayElevation'));
-
 						//set number of digits for coordinates
 						var digits=7;
 						var lat=storeItem.get('lat');
 						var lon=storeItem.get('lon');
-
 						// show marker on map
 						setMoveableMarker(lat, lon);
-
 						//set digit number, convert to string and replace "." with ","
 						lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
 						lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
-						//lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
-						//lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",",");
-
 						//tooltip text
 						this.setTitle(getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': '+ lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': '+ lon);
 					}
 				},
-			},{
+			},{//display marker on map as points at top of chart area
 				type: 'scatter',
 				highlight:false,
 				axis: 'left',
@@ -438,26 +428,21 @@ Ext4.onReady( function () {
 					renderer: function(storeItem, item) {
 						//cut digits
 						var elevation=Math.floor(storeItem.get('displayElevation'));
-
 						//set number of digits for coordinates
 						var digits=7;
 						var lat=storeItem.get('lat');
 						var lon=storeItem.get('lon');
-
 						// show marker on map
 						setMoveableMarker(lat, lon);
-
 						//set digit number, convert to string and replace "." with ","
 						lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
 						lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
-
 						//tooltip text
+						//do not display direction for last marker point
 						if (storeItem.get('direction')!="") {
 							this.setTitle(getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': '+ lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': '+ lon  +'<br>' + getI18Nstr("dir", "Direction") + ': '+ storeItem.get('direction') );
-							
 						} else {
 							this.setTitle(getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': '+ lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': '+ lon+'<br> 	<br>' );
-
 						}
 					}
 				}
@@ -476,7 +461,6 @@ Ext4.onReady( function () {
 		minElevation=Math.floor(elevationStore.min('elevation'));
 		//round minimum value to 50er
 		minElevation=(Math.floor(minElevation/50)*50);
-
 		//detect highest value from data
 		maxElevation=Math.floor(elevationStore.max('elevation'));
 		//round maximum value to next higher hundreder and add 100
@@ -527,9 +511,9 @@ Ext4.onReady( function () {
 
 		//add min y-value-axis numberfield
 		Ext4.getCmp('mainControlPanel').add(createHeightStartValueField(minElevation,maxElevation));
-
+		//add chart to main panel
 		createElevationChart(minElevation,maxElevation);
-
+		//calculate current vertical exaggeration and set value to textfields, rounded to 2 digits
 		var vertExag=Math.floor(calcVertExag()*Math.pow(10,2))/Math.pow(10,2);
 		Ext4.getCmp('vertExagNumberField').setValue(vertExag);
 		Ext4.getCmp('minYAxisText').setValue(minElevation);
@@ -560,6 +544,7 @@ Ext4.onReady( function () {
 	 */
 	window.generateElevationDataFromResults = function (results, totalLength) {
 		var data = [];
+		//calculate length bewtween two elevation points
 		var gapLength=totalLength/results.length;
 		var totalGapLength=0;
 		//get max Elevation for marker label placement in chart
@@ -571,14 +556,13 @@ Ext4.onReady( function () {
 		}
 		//round it to a 50er value and add offset. Marker labels must be always visible
 		maxElevation=(Math.floor(maxElevation/50)*50)+47;
-
+		//loop throug elevation array and push data to elevation store
 		for (var i = 0; i < results.length; i++) {
-
+			//check if elevation point is marker
 			if (results[i].breakPoint) {
-
 				data.push({
 					index: i,
-					elevation: results[i].elevation,//elevation can be changed through filter, this is why displayElevation is needed
+					elevation: results[i].elevation,//elevation can be changed through filter, this is why displayElevation is needed to be shown in tooltip
 					displayElevation: results[i].elevation,
 					lat: results[i].lat,
 					lon: results[i].lon,
@@ -598,6 +582,7 @@ Ext4.onReady( function () {
 					xAxisLength:totalGapLength
 				});
 			}
+			//add length between two points to length (needed for labelling x-axis)
 			totalGapLength+=gapLength;
 		}
 		//save current data to global array
@@ -651,36 +636,71 @@ Ext4.onReady( function () {
 		return retData;
 	}
 
+	/**
+	 * function: calcVertRange(Number vertExag)
+	 * description: Function calculates vertical range for given vertical exaggeration. This range is used as maximum value for y-axis 
+	 * 				in chart after applying new vertical exaggeration. 
+	 * parameters:
+	 * -    vertExag:    vertical exaggeration as float from vertical exaggeration combobox.
+	 * return:  number range: new vertical range
+	 * */
 	function calcVertRange(vertExag) {
+		//get max value from x-axis
 		var maxHor=Ext4.getCmp('elevationChart').axes.items[1].to;
 		maxHor=Math.floor(maxHor*Math.pow(10,1))/Math.pow(10,1)
+		//calculate width of x-axis in pixels by abstractin constant pixel value from chart-width(=width of whole chart area)
 		var chartWidth=Ext4.getCmp('elevationChart').getWidth()-90;
+		//calculate horizontal scale
 		var horScale=maxHor/chartWidth;
+		//calculate height of y-axis in pixels by abstractin constant pixel value from chart-height(=height of whole chart area)
 		var chartHeight=Ext4.getCmp('elevationChart').getHeight()-74;
 		var range=horScale*(chartHeight/vertExag);
+		//multiplicate by 1000, because unit of x-axis=km and unit of y-axis=m
 		return range*1000;
 	}
 
+	/**
+	 * function: calcVertExag()
+	 * description: Function calculates current vertical exaggeration by using range of elevation chart
+	 * return:  number vertExag: current vertical exaggeration
+	 * */
 	function calcVertExag() {
+		//get max value from x-axis
 		var maxHor=Ext4.getCmp('elevationChart').axes.items[1].to;
 		maxHor=Math.floor(maxHor*Math.pow(10,1))/Math.pow(10,1)
+		//calculate width of x-axis in pixels by abstractin constant pixel value from chart-width(=width of whole chart area)
 		var chartWidth=Ext4.getCmp('elevationChart').getWidth()-90;
+		//calculate horizontal scale
 		var horScale=maxHor/chartWidth;
+		//calculate height of y-axis in pixels by abstractin constant pixel value from chart-height(=height of whole chart area)
 		var chartHeight=Ext4.getCmp('elevationChart').getHeight()-74;
-		//var range=maxElevation-minElevation;
+		//get current range by abstracting y-axis min value from y-axis max value
 		var range=Ext4.getCmp('elevationChart').axes.items[0].to-Ext4.getCmp('elevationChart').axes.items[0].from;
+		//caluclate vertical scale
 		var vertScale=range*0.001/chartHeight;
 		var vertExag= horScale/vertScale;
 		return vertExag;
 	}
-
+	
+	/**
+	 * function: calcMaxVertExag()
+	 * description: Function calculates maximum current vertical exaggeration by using maximum value from data 
+	 * 				and min value from y-axis-start-numberfield as range
+	 * * return:  number vertExag: maximal vertical exaggeration
+	 * */
 	function calcMaxVertExag() {
+		//get max value from x-axis
 		var maxHor=Ext4.getCmp('elevationChart').axes.items[1].to;
 		maxHor=Math.floor(maxHor*Math.pow(10,1))/Math.pow(10,1)
+		//calculate width of x-axis in pixels by abstractin constant pixel value from chart-width(=width of whole chart area)
 		var chartWidth=Ext4.getCmp('elevationChart').getWidth()-90;
+		//calculate horizontal scale
 		var horScale=maxHor/chartWidth;
+		//calculate height of y-axis in pixels by abstractin constant pixel value from chart-height(=height of whole chart area)
 		var chartHeight=Ext4.getCmp('elevationChart').getHeight()-74;
+		//calculate range by using max value from data and value from y-axis-start-numberfield
 		var range=maxElevation-parseInt(Ext4.getCmp('yStartValueTxt').getValue());
+		//caluclate vertical scale
 		var vertScale=range*0.001/chartHeight;
 		var vertExag= horScale/vertScale;
 		maxVertExag=vertExag;
