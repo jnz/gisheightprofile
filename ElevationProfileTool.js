@@ -1046,11 +1046,14 @@ Ext4.onReady( function () {
 			listeners: {
 				change: {
 					fn: function(obj, newVal, oldVal) {
-						Ext4.getCmp('chartContainer').removeAll();
-						//draw new axis with new min-value
-						createElevationChart(parseInt(newVal), currentMaxElevation);
-						//filter data, that is smaller than new min value and display it in chart
-						elevationStore.loadData(filterDataByMinValue(parseInt(newVal)));
+						//only redraw chart when new value between min-max range
+						if (parseInt(newVal)<=obj.maxValue &&parseInt(newVal)>=obj.minValue){
+							Ext4.getCmp('chartContainer').removeAll();
+							//draw new axis with new min-value
+							createElevationChart(parseInt(newVal), currentMaxElevation);
+							//filter data, that is smaller than new min value and display it in chart
+							elevationStore.loadData(filterDataByMinValue(parseInt(newVal)));
+						}
 					}
 				}
 			}

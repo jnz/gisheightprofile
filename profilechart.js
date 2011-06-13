@@ -191,11 +191,14 @@ Ext4.onReady( function () {
 			listeners: {
 				change: {
 					fn: function(obj, newVal, oldVal) {
-						Ext4.getCmp('chartContainer').removeAll();
-						//draw new axis with new min-value
-						createElevationChart(parseInt(newVal), currentMaxElevation);
-						//filter data, that is smaller than new min value and display it in chart
-						elevationStore.loadData(filterDataByMinValue(parseInt(newVal)));
+						//only redraw chart when new value between min-max range
+						if (parseInt(newVal)<=obj.maxValue &&parseInt(newVal)>=obj.minValue){
+							Ext4.getCmp('chartContainer').removeAll();
+							//draw new axis with new min-value
+							createElevationChart(parseInt(newVal), currentMaxElevation);
+							//filter data, that is smaller than new min value and display it in chart
+							elevationStore.loadData(filterDataByMinValue(parseInt(newVal)));
+						}
 					}
 				}
 			}
@@ -521,8 +524,8 @@ Ext4.onReady( function () {
 		//calculate current vertical exaggeration and set value to textfields, rounded to 2 digits
 		var vertExag=Math.floor(calcVertExag()*Math.pow(10,2))/Math.pow(10,2);
 		Ext4.getCmp('vertExagNumberField').setValue(vertExag);
-		Ext4.getCmp('minYAxisText').setValue(minElevation);
-		Ext4.getCmp('maxYAxisText').setValue(maxElevation-50);
+		//Ext4.getCmp('minYAxisText').setValue(minElevation);
+		//Ext4.getCmp('maxYAxisText').setValue(maxElevation-50);
 
 	}
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
