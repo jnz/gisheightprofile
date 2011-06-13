@@ -1,7 +1,3 @@
-Ext4.require(['Ext4.data.*']);
-Ext4.require(['Ext4.chart.*']);
-Ext4.require(['Ext4.Window', 'Ext4.fx.target.Sprite', 'Ext4.layout.container.Fit']);
-
 //declare global variables
 var win;
 var elevationChart;
@@ -275,18 +271,24 @@ Ext4.onReady( function () {
 	var southControlPanel= {
 		id:'southControlPanel',
 		xtype:'panel',
-		height:80,
+		height:60,
 		bodyStyle: {
 			background: '#dfe8f6 '
 		},
-		border: true,
+		border: false,
 		region:'south',
 		layout: {
 			type: 'vbox',
 			align: 'stretch',
 			padding: 5
 		},
-		items:[minYAxisText,maxYAxisText]
+		items: {
+			id:'imgPanel',
+			height:50,
+			xtype:'image',
+			src:'img/mapquest_Logo_Med.png'
+		}
+		//items:[minYAxisText,maxYAxisText]
 	}
 
 	/**
@@ -508,7 +510,10 @@ Ext4.onReady( function () {
 			}	]
 
 		});
-
+		//remove imagePanel if heightprovider not mapquest
+		if(heightProvider!='mapquest'){
+			Ext4.getCmp('southControlPanel').destroy();
+		}
 		//add min y-value-axis numberfield
 		Ext4.getCmp('mainControlPanel').add(createHeightStartValueField(minElevation,maxElevation));
 		//add chart to main panel

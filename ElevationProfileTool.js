@@ -20,7 +20,7 @@ var globalMap=null;
 // Height Provider:
 // - "google" (default)     http://code.google.com/intl/en-EN/apis/maps/documentation/javascript/
 // - "mapquest"             http://developer.mapquest.com/web/products/open/elevation-service
-var heightProvider = "google";
+var heightProvider;
 
 // When drawing the geodetic line, every GEODETIC_LINE_SMOOTHERth point is used.
 // GEODETIC_LINE_SMOOTHER = 1 would be a very smooth curve (but slow in drawing).
@@ -49,7 +49,7 @@ GeoExt.ux.ElevationProfileTool = Ext.extend(Ext.Button, {
 	 */
 	initComponent: function() {
 		// Init i18n settings
-		//setLocale(GeoExt.Lang.locale);
+		setLocale(GeoExt.Lang.locale);
 		
 		GeoExt.ux.ElevationProfileTool.superclass.initComponent.apply(this, arguments);
 		
@@ -852,6 +852,7 @@ function azimuthApprox(latStart, lonStart, latEnd, lonEnd)
  *************************	start profilechart.js functions *************************
  ************************************************************************************ 
  */
+
 //declare global variables
 var win;
 var elevationChart;
@@ -1122,21 +1123,29 @@ Ext4.onReady( function () {
 		},
 		items:[comboVertExag,applyVertExagButton]
 	}
+	
+	
 	var southControlPanel= {
 		id:'southControlPanel',
 		xtype:'panel',
-		height:80,
+		height:60,
 		bodyStyle: {
 			background: '#dfe8f6 '
 		},
-		border: true,
+		border: false,
 		region:'south',
 		layout: {
 			type: 'vbox',
 			align: 'stretch',
 			padding: 5
 		},
-		items:[minYAxisText,maxYAxisText]
+		items: {
+			id:'imgPanel',
+			height:50,
+			xtype:'image',
+			src:'img/mapquest_Logo_Med.png'
+		}
+		//items:[minYAxisText,maxYAxisText]
 	}
 
 	/**
@@ -1342,7 +1351,7 @@ Ext4.onReady( function () {
 					height:100,
 					minWidth:100,
 					layout: 'border',
-					items:[northControlPanel,mainControlPanel/*,southControlPanel*/]
+					items:[northControlPanel,mainControlPanel,southControlPanel]
 				}
 				,{
 					xtype: 'container',
@@ -1358,7 +1367,10 @@ Ext4.onReady( function () {
 			}	]
 
 		});
-
+		//remove imagePanel if heightprovider not mapquest
+		if(heightProvider!='mapquest'){
+			Ext4.getCmp('southControlPanel').destroy();
+		}
 		//add min y-value-axis numberfield
 		Ext4.getCmp('mainControlPanel').add(createHeightStartValueField(minElevation,maxElevation));
 		//add chart to main panel
