@@ -515,7 +515,7 @@ Ext4.onReady( function () {
 		});
 		//remove imagePanel if heightprovider not mapquest
 		if(heightProvider!='mapquest'){
-			Ext4.getCmp('southControlPanel').destroy();
+			Ext4.getCmp('southControlPanel').setVisible(false);
 		}
 		//add min y-value-axis numberfield
 		Ext4.getCmp('mainControlPanel').add(createHeightStartValueField(minElevation,maxElevation));
