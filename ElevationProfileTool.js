@@ -334,6 +334,14 @@ function clearAllMarkers() {
         markerArray[i].destroy();
     }
     markerLayer.clearMarkers();
+
+    var vectorLayerArray = globalMap.getLayersByName("Path");
+    if (vectorLayerArray.length != 1) {
+        console.log('No path layer found');
+        return;
+    }
+    var vectorLayer = vectorLayerArray[0];
+    vectorLayer.destroyFeatures();
 }
 
 /**
