@@ -113,7 +113,7 @@ var g_i18n_de =
     "nan"            : "Wert ist keine Zahl",
     "biggerthan0"    : "Zahl muss größer als Null sein",
     "biggerthanmax"  : "Zahl ist größer als die max. vertikale Überhöhung",
-    "aboutText"    	 : "Dieses Tool wurde von Studenten der Hochschule Karlsruhe im Master Geomatik entwickelt. Klicken Sie auf das Bild um mehr Informationen über Geomatik zu erhalten.",
+    "aboutText"    	 : "Dieses Tool wurde von Studenten der Hochschule Karlsruhe im Masterstudiengang Geomatik entwickelt. Klicken Sie auf das Bild um mehr Informationen über Geomatik zu erhalten.",
 };
 
 // Spanish translations
