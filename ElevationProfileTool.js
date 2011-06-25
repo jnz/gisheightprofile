@@ -23,7 +23,7 @@ var heightProvider;
 // When drawing the geodetic line, every GEODETIC_LINE_SMOOTHERth point is used.
 // GEODETIC_LINE_SMOOTHER = 1 would be a very smooth curve (but slow in drawing).
 // GEODETIC_LINE_SMOOTHER = 20 would be a edged curve (but fast in drawing).
-var GEODETIC_LINE_SMOOTHER = 10;
+var GEODETIC_LINE_SMOOTHER = 15;
 
 //create ElevationProfileTool as GeoExt-ux-extension
 GeoExt.ux.ElevationProfileTool = Ext.extend(Ext.Button, {
@@ -336,6 +336,14 @@ function clearAllMarkers() {
         markerArray[i].destroy();
     }
     markerLayer.clearMarkers();
+
+    var vectorLayerArray = globalMap.getLayersByName("Path");
+    if (vectorLayerArray.length != 1) {
+        console.log('No path layer found');
+        return;
+    }
+    var vectorLayer = vectorLayerArray[0];
+    vectorLayer.destroyFeatures();
 }
 
 /**
