@@ -38,7 +38,7 @@ GeoExt.ux.ElevationProfileTool = Ext.extend(Ext.Button, {
     heighProvider: 'google',
     //height provider for elevation service
     enableToggle: true,
-    icon: 'img/map_edit.png',
+    customLanguage: 'en',
     //icon for button
     toggleGroup: "measure controls",
     toggleHandler: function (item, pressed) { //handler for click on button
@@ -54,15 +54,13 @@ GeoExt.ux.ElevationProfileTool = Ext.extend(Ext.Button, {
      */
     initComponent: function () {
         // Init i18n settings
-        setLocale(GeoExt.Lang.locale);
+        setLocale(this.customLanguage);
 
         GeoExt.ux.ElevationProfileTool.superclass.initComponent.apply(this, arguments);
 
         //set global variables
         globalMap = this.map;
         heightProvider = this.heightProvider;
-
-        this.setText(getI18Nstr("profiletool", "Height Profile Tool"));
 
         // Marker layer
         var markerLayer = new OpenLayers.Layer.Markers("Markers", {
@@ -295,7 +293,7 @@ function addMarkerToMap(x, y, markerIndex) {
     markerIndex = Math.min(markerIndex, 25);
     var markerLetter = String.fromCharCode(65 + markerIndex);
 
-    var iconURL = "img/red_Marker" + markerLetter + ".png";
+    var iconURL = PROFILE_DIR_PREFIX + "img/red_Marker" + markerLetter + ".png";
     var size = new OpenLayers.Size(20, 34);
     var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
     var icon = new OpenLayers.Icon(iconURL, size, offset);
@@ -366,7 +364,7 @@ function setMoveableMarker(lat, lon) {
 
     // We have not found our moveable marker layer, so we create it.
     // This is a sort of lazy loading.
-    var iconURL = "img/blue_Marker.png";
+    var iconURL = PROFILE_DIR_PREFIX + "img/blue_Marker.png";
     var size = new OpenLayers.Size(20, 34);
     var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
     var icon = new OpenLayers.Icon(iconURL, size, offset);

@@ -51,9 +51,12 @@ Ext.onReady( function() {
     //create ElevatioProfileTool GeoExt-ux-extension
     //pass map and heightprovider("google" or "mapquest")
     var elevationProfileTool = new GeoExt.ux.ElevationProfileTool({
-        map:map,
-        heightProvider:'google'
+        map: map,
+        icon: 'img/map_edit.png',
+        customLanguage: GeoExt.Lang.locale,
+        heightProvider: 'google'
     });
+    elevationProfileTool.setText(getI18Nstr("profiletool", "Height Profile Tool"));
     mapPanel.getTopToolbar().add(elevationProfileTool);
 
     //Add geocoder search text box
