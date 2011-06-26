@@ -5,17 +5,15 @@
  * See http://svn.geoext.org/core/trunk/geoext/license.txt for the full text
  * of the license.
  */
-
 /** api: (define)
  *  module = GeoExt.ux
  *  class = ElevationProfileTool
  *  base_link = `Ext.Button <http://dev.sencha.com/deploy/dev/docs/?class=Ext.Button>`_
  */
-
 Ext.namespace("GeoExt.ux");
 
 //variable holds map object
-var globalMap=null;
+var globalMap = null;
 
 // Height Provider:
 // - "google" (default)     http://code.google.com/intl/en-EN/apis/maps/documentation/javascript/
@@ -25,18 +23,22 @@ var heightProvider;
 // When drawing the geodetic line, every GEODETIC_LINE_SMOOTHERth point is used.
 // GEODETIC_LINE_SMOOTHER = 1 would be a very smooth curve (but slow in drawing).
 // GEODETIC_LINE_SMOOTHER = 20 would be a edged curve (but fast in drawing).
-var GEODETIC_LINE_SMOOTHER=10;
+var GEODETIC_LINE_SMOOTHER = 15;
 
 //create ElevationProfileTool as GeoExt-ux-extension
 GeoExt.ux.ElevationProfileTool = Ext.extend(Ext.Button, {
     //properties of ElevationProfileTool
-    map: null, //OpenLayers map
-    profileControl:null, //profileControl
-    heighProvider:'google',//height provider for elevation service
-    enableToggle  : true,
-    icon:'img/map_edit.png',//icon for button
-    toggleGroup   : "measure controls",
-    toggleHandler : function (item, pressed) {//handler for click on button
+    map: null,
+    //OpenLayers map
+    profileControl: null,
+    //profileControl
+    heighProvider: 'google',
+    //height provider for elevation service
+    enableToggle: true,
+    icon: 'img/map_edit.png',
+    //icon for button
+    toggleGroup: "measure controls",
+    toggleHandler: function (item, pressed) { //handler for click on button
         clearAllMarkers();
         if (pressed) {
             this.profileControl.activate();
@@ -47,21 +49,21 @@ GeoExt.ux.ElevationProfileTool = Ext.extend(Ext.Button, {
 
     /** private: constructor
      */
-    initComponent: function() {
+    initComponent: function () {
         // Init i18n settings
         setLocale(GeoExt.Lang.locale);
 
         GeoExt.ux.ElevationProfileTool.superclass.initComponent.apply(this, arguments);
 
         //set global variables
-        globalMap=this.map;
-        heightProvider=this.heightProvider;
+        globalMap = this.map;
+        heightProvider = this.heightProvider;
 
         this.setText(getI18Nstr("profiletool", "Height Profile Tool"));
 
         // Marker layer
         var markerLayer = new OpenLayers.Layer.Markers("Markers", {
-            displayInLayerSwitcher : false
+            displayInLayerSwitcher: false
         });
         this.map.addLayer(markerLayer);
 
@@ -72,9 +74,9 @@ GeoExt.ux.ElevationProfileTool = Ext.extend(Ext.Button, {
         layer_style.fillOpacity = 0.2;
         layer_style.graphicOpacity = 1;
         var vectorLayer = new OpenLayers.Layer.Vector("Path", {
-            style                  : layer_style,
-            renderers              : renderer,
-            displayInLayerSwitcher : false
+            style: layer_style,
+            renderers: renderer,
+            displayInLayerSwitcher: false
         });
         this.map.addLayer(vectorLayer);
 
@@ -120,7 +122,7 @@ GeoExt.ux.ElevationProfileTool = Ext.extend(Ext.Button, {
                 measure: function (evt) {
                     onProfilePathComplete(evt);
                 },
-                measurepartial: function(evt) {
+                measurepartial: function (evt) {
                     onProfilePathPartial(evt);
                 }
             },
@@ -155,11 +157,12 @@ Ext.reg('gxux_elevationProfileTool', GeoExt.ux.ElevationProfileTool);
  * parameters:
  * -    evt:    OpenLayers.Control.Measure "measure" event
  */
+
 function onProfilePathComplete(evt) {
     var i;
     var pointCount = evt.geometry.components.length;
     var from; // OpenLayers Point
-    var to;  // OpenLayers Point
+    var to; // OpenLayers Point
     var fromEllipsoidal; // x, y
     var toEllipsoidal; // x, y
     var fromLonLat; // lon, lat (OpenLayer.LonLat object) in [deg]
@@ -171,31 +174,28 @@ function onProfilePathComplete(evt) {
     var segmentArray = []; // collect all the segments in this array
     var srcProj = globalMap.getProjectionObject(); // current map projection
     var wgs84 = new OpenLayers.Projection("EPSG:4326"); // let's store wgs84 coordinates
-
     // Let's remove the older markers first
     clearAllMarkers();
     // Add first marker:
-    addMarkerToMap(evt.geometry.components[0].x,
-    evt.geometry.components[0].y, 0);
+    addMarkerToMap(evt.geometry.components[0].x, evt.geometry.components[0].y, 0);
     for (i = 1; i < pointCount; i++) {
-        from            = evt.geometry.components[i-1];
-        to              = evt.geometry.components[i];
+        from = evt.geometry.components[i - 1];
+        to = evt.geometry.components[i];
         fromEllipsoidal = from.clone().transform(srcProj, wgs84); // transform to wgs84
-        toEllipsoidal   = to.clone().transform(srcProj, wgs84);
-        fromLonLat      = new OpenLayers.LonLat(fromEllipsoidal.x, fromEllipsoidal.y);
-        toLonLat        = new OpenLayers.LonLat(toEllipsoidal.x, toEllipsoidal.y);
-        segmentLength   = OpenLayers.Util.distVincenty(fromLonLat, toLonLat);
-        azimuth         = azimuthApprox(from.y, from.x, to.y, to.x); // use directly x,y
+        toEllipsoidal = to.clone().transform(srcProj, wgs84);
+        fromLonLat = new OpenLayers.LonLat(fromEllipsoidal.x, fromEllipsoidal.y);
+        toLonLat = new OpenLayers.LonLat(toEllipsoidal.x, toEllipsoidal.y);
+        segmentLength = OpenLayers.Util.distVincenty(fromLonLat, toLonLat);
+        azimuth = azimuthApprox(from.y, from.x, to.y, to.x); // use directly x,y
         directionString = directionStringFromAzimuth(azimuth); // N, NE, E, SW etc.
-
         segmentArray.push({
-            from            : from,
-            to              : to,
-            fromLonLat      : fromLonLat,
-            toLonLat        : toLonLat,
-            segmentLength   : segmentLength,
-            azimuth         : azimuth,
-            directionString : directionString,
+            from: from,
+            to: to,
+            fromLonLat: fromLonLat,
+            toLonLat: toLonLat,
+            segmentLength: segmentLength,
+            azimuth: azimuth,
+            directionString: directionString,
             cumulativeLength: totalLength
         });
 
@@ -223,13 +223,12 @@ function onProfilePathComplete(evt) {
     //     console.log('  Direction: ' + segmentArray[i].directionString);
     // }
     // console.log('');
-
     var pathCollection = {
-        segmentArray : segmentArray,
-        totalLength  : totalLength
+        segmentArray: segmentArray,
+        totalLength: totalLength
     };
-    getHeightAlongPath(pathCollection, function(resultsArray, pathCollection) {
-        if(resultsArray == null) {
+    getHeightAlongPath(pathCollection, function (resultsArray, pathCollection) {
+        if (resultsArray == null) {
             return;
         }
         drawHeightPath(resultsArray, pathCollection);
@@ -251,6 +250,7 @@ function onProfilePathPartial(evt) {
  * -    resultsArray   : Contains the lat, lon and height along the path
  * -    pathCollection : The original path segments, drawn by the user
  */
+
 function drawHeightPath(resultsArray, pathCollection) {
     var vectorLayerArray = globalMap.getLayersByName("Path");
     if (vectorLayerArray.length != 1) {
@@ -261,24 +261,24 @@ function drawHeightPath(resultsArray, pathCollection) {
     vectorLayer.destroyFeatures();
 
     var style_line = {
-        strokeColor     : "#FF1111",
-        strokeWidth     : 6,
-        strokeDashstyle : "solid",
-        strokeOpacity   : 0.4,
-        pointRadius     : 6,
-        pointerEvents   : "visiblePainted"
+        strokeColor: "#FF1111",
+        strokeWidth: 6,
+        strokeDashstyle: "solid",
+        strokeOpacity: 0.4,
+        pointRadius: 6,
+        pointerEvents: "visiblePainted"
     };
 
     // convert wgs84 input from function arguments to current system
-    var nativeProj  = globalMap.getProjectionObject();
-    var wgs84       = new OpenLayers.Projection("EPSG:4326");
+    var nativeProj = globalMap.getProjectionObject();
+    var wgs84 = new OpenLayers.Projection("EPSG:4326");
     var pWGS84;
 
     // create a line feature from a list of points
     var pointList = [];
-    for(var i=0; i<resultsArray.length; i++) {
+    for (var i = 0; i < resultsArray.length; i++) {
         // we only draw every GEODETIC_LINE_SMOOTHERth point if it is not a breakpoint
-        if(i % GEODETIC_LINE_SMOOTHER == 0 || resultsArray[i].breakPoint != null) {
+        if (i % GEODETIC_LINE_SMOOTHER == 0 || resultsArray[i].breakPoint != null) {
             pWGS84 = new OpenLayers.LonLat(resultsArray[i].lon, resultsArray[i].lat);
             pWGS84.transform(wgs84, nativeProj);
             pointList.push(new OpenLayers.Geometry.Point(pWGS84.lon, pWGS84.lat));
@@ -299,6 +299,7 @@ function drawHeightPath(resultsArray, pathCollection) {
  * -    y         : Latitude of the new marker (native projection)
  * -    markerIndex : Number of icon to be used (0 = A, 1 = B, ...)
  */
+
 function addMarkerToMap(x, y, markerIndex) {
     var markerLayerArray = globalMap.getLayersByName("Markers");
     if (markerLayerArray.length != 1) {
@@ -309,14 +310,13 @@ function addMarkerToMap(x, y, markerIndex) {
 
     // convert to a character from A-Z
     markerIndex = Math.min(markerIndex, 25);
-    var markerLetter = String.fromCharCode(65+markerIndex);
+    var markerLetter = String.fromCharCode(65 + markerIndex);
 
     var iconURL = "img/red_Marker" + markerLetter + ".png";
-    var size    = new OpenLayers.Size(20,34);
-    var offset  = new OpenLayers.Pixel(-(size.w/2), -size.h);
-    var icon    = new OpenLayers.Icon(iconURL, size, offset);
-    markerLayer.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(x, y),
-    icon));
+    var size = new OpenLayers.Size(20, 34);
+    var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+    var icon = new OpenLayers.Icon(iconURL, size, offset);
+    markerLayer.addMarker(new OpenLayers.Marker(new OpenLayers.LonLat(x, y), icon));
 }
 
 /**
@@ -324,6 +324,7 @@ function addMarkerToMap(x, y, markerIndex) {
  * description: Remove all markers from the marker layer
  * and remove all drawings from the path vector layer.
  */
+
 function clearAllMarkers() {
     var i;
     var markerLayerArray = globalMap.getLayersByName("Markers");
@@ -354,6 +355,7 @@ function clearAllMarkers() {
  * -    lat       : Longitude of the new marker (WGS84)
  * -    lon       : Latitude of the new marker (WGS84)
  */
+
 function setMoveableMarker(lat, lon) {
     var i;
     var markerLayerArray = globalMap.getLayersByName("Markers");
@@ -364,10 +366,10 @@ function setMoveableMarker(lat, lon) {
     var markerArray = markerLayer.markers;
 
     // convert wgs84 input from function arguments to current system
-    var nativeProj  = globalMap.getProjectionObject();
-    var wgs84       = new OpenLayers.Projection("EPSG:4326");
-    var pWGS84      = new OpenLayers.LonLat(lon, lat);
-    var pNative     = pWGS84.clone().transform(wgs84, nativeProj);
+    var nativeProj = globalMap.getProjectionObject();
+    var wgs84 = new OpenLayers.Projection("EPSG:4326");
+    var pWGS84 = new OpenLayers.LonLat(lon, lat);
+    var pNative = pWGS84.clone().transform(wgs84, nativeProj);
 
     // if we already have a moveable marker, just update the position
     for (i = 0; i < markerArray.length; i++) {
@@ -382,10 +384,10 @@ function setMoveableMarker(lat, lon) {
     // We have not found our moveable marker layer, so we create it.
     // This is a sort of lazy loading.
     var iconURL = "img/blue_Marker.png";
-    var size    = new OpenLayers.Size(20,34);
-    var offset  = new OpenLayers.Pixel(-(size.w/2), -size.h);
-    var icon    = new OpenLayers.Icon(iconURL, size, offset);
-    var marker  = new OpenLayers.Marker(pNative, icon)
+    var size = new OpenLayers.Size(20, 34);
+    var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+    var icon = new OpenLayers.Icon(iconURL, size, offset);
+    var marker = new OpenLayers.Marker(pNative, icon)
     marker.isMoveableMarker = true;
     markerLayer.addMarker(marker);
 }
@@ -439,12 +441,11 @@ function clearMoveableMarker() {
  *
  * return: null (see callback function)
  */
-function getHeightAlongPath(pathCollection, callback)
-{
-    if(heightProvider == "mapquest")
-        getHeightAlongPathMapQuest(pathCollection, callback);
+
+function getHeightAlongPath(pathCollection, callback) {
+    if (heightProvider == "mapquest") getHeightAlongPathMapQuest(pathCollection, callback);
     else // default provider: "google"
-        getHeightAlongPathGoogle(pathCollection, callback);
+    getHeightAlongPathGoogle(pathCollection, callback);
 }
 
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -457,35 +458,31 @@ var HEIGHT_PATH_SAMPLES = 200;
  * description: Gets the heights with the Google Maps API (see getHeightAlongPath
  * for details).
  */
-function getHeightAlongPathGoogle(pathCollection, callback)
-{
+
+function getHeightAlongPathGoogle(pathCollection, callback) {
     // Create an ElevationService.
     var elevator = new google.maps.ElevationService();
     var i;
     var segmentArray = pathCollection.segmentArray;
     var segCount = segmentArray.length; // segment count
-    var path = new Array(segCount+1); // e. g. 2 segments have 3 points
-
+    var path = new Array(segCount + 1); // e. g. 2 segments have 3 points
     // Create the path from the segments.
     for (i = 0; i < segCount; i++) {
-        path[i] = new google.maps.LatLng(segmentArray[i].fromLonLat.lat,
-                                         segmentArray[i].fromLonLat.lon);
+        path[i] = new google.maps.LatLng(segmentArray[i].fromLonLat.lat, segmentArray[i].fromLonLat.lon);
     }
-    path[segCount] = new google.maps.LatLng(segmentArray[segCount-1].toLonLat.lat,
-                                            segmentArray[segCount-1].toLonLat.lon);
+    path[segCount] = new google.maps.LatLng(segmentArray[segCount - 1].toLonLat.lat, segmentArray[segCount - 1].toLonLat.lon);
 
     // Create a PathElevationRequest object using this array.
     // Ask for 256 samples along that path.
     var pathRequest = {
-        'path'    : path,
-        'samples' : HEIGHT_PATH_SAMPLES
+        'path': path,
+        'samples': HEIGHT_PATH_SAMPLES
     };
 
     // Initiate the path request.
-    elevator.getElevationAlongPath(pathRequest,
-            function(results, status) {
-                googleElevationCallback(results, status, callback, pathCollection);
-            });
+    elevator.getElevationAlongPath(pathRequest, function (results, status) {
+        googleElevationCallback(results, status, callback, pathCollection);
+    });
 }
 
 /**
@@ -497,8 +494,8 @@ function getHeightAlongPathGoogle(pathCollection, callback)
  * -    callback:           Callback function of the original caller
  * -    pathCollection:     Path information
  */
-function googleElevationCallback(results, status, callback, pathCollection)
-{
+
+function googleElevationCallback(results, status, callback, pathCollection) {
     if (status != google.maps.ElevationStatus.OK) {
         callback(null, null);
     }
@@ -509,31 +506,32 @@ function googleElevationCallback(results, status, callback, pathCollection)
     var returnArray = new Array(results.length);
     // the returnArray is filled with the height data
     for (i = 0; i < results.length; i++) {
-        returnArray[i] = { lat        : results[i].location.lat(),
-                           lon        : results[i].location.lng(),
-                           elevation  : results[i].elevation,
-                           breakPoint : null };
+        returnArray[i] = {
+            lat: results[i].location.lat(),
+            lon: results[i].location.lng(),
+            elevation: results[i].elevation,
+            breakPoint: null
+        };
     }
     // now we set the breakPoint attribute for positions
     // where the path is changing its direction.
     // this can be used by the chart functions to add additional
     // informations to the chart.
     for (i = 0; i < segmentArray.length; i++) {
-        cIndex = (returnArray.length-1)*segmentArray[i].cumulativeLength /
-            pathCollection.totalLength; // position in the path from 0..1
+        cIndex = (returnArray.length - 1) * segmentArray[i].cumulativeLength / pathCollection.totalLength; // position in the path from 0..1
         cIndex = Math.round(cIndex); // we need an integer for the array index
-
-        returnArray[cIndex].breakPoint = { azimuth         : segmentArray[i].azimuth,
-                                           directionString : segmentArray[i].directionString,
-                                           index           : i // segment index
-                                         };
+        returnArray[cIndex].breakPoint = {
+            azimuth: segmentArray[i].azimuth,
+            directionString: segmentArray[i].directionString,
+            index: i // segment index
+        };
     }
     // set the breakpoint attribute of the last point,
     // but do net set azimuth or directionString, as they make no sense here
-    returnArray[returnArray.length-1].breakPoint = {
-        azimuth         : 0,
-        directionString : "",
-        index           : i
+    returnArray[returnArray.length - 1].breakPoint = {
+        azimuth: 0,
+        directionString: "",
+        index: i
     };
     callback(returnArray, pathCollection);
 }
@@ -544,7 +542,6 @@ function googleElevationCallback(results, status, callback, pathCollection)
 
 var HEIGHT_PATH_SAMPLES_MAPQUEST = 100;
 var MAPQUEST_PRECISION = 5; // Don't change this, or else you need to change the compression algorithm too
-
 // The following variables are used to store data until the MapQuest service
 // response arived.
 var g_mapquest_callback = null;
@@ -555,15 +552,14 @@ var g_mapquest_pathcollection = null;
  * description: Gets the heights with the MapQuest API (see getHeightAlongPath
  * for details).
  */
-function getHeightAlongPathMapQuest(pathCollection, callback)
-{
+
+function getHeightAlongPathMapQuest(pathCollection, callback) {
     // Store the pathCollection and callback function in a global variable until
     // the async MapQuest response is available.
     g_mapquest_pathcollection = pathCollection;
-    g_mapquest_callback = function(returnArray)
-                          {
-                              callback(returnArray, pathCollection);
-                          };
+    g_mapquest_callback = function (returnArray) {
+        callback(returnArray, pathCollection);
+    };
     mapquestRequest(pathCollection);
 }
 
@@ -583,10 +579,10 @@ function getHeightAlongPathMapQuest(pathCollection, callback)
  *
  * return: coordinate array
  */
-function getPathSamplePoints(pathCollection)
-{
+
+function getPathSamplePoints(pathCollection) {
     var samplepoints = HEIGHT_PATH_SAMPLES_MAPQUEST;
-    var singleSegment = pathCollection.totalLength/samplepoints; // unit [km]
+    var singleSegment = pathCollection.totalLength / samplepoints; // unit [km]
     var pathArray = [];
     var segmentArray = pathCollection.segmentArray;
     var segCount = segmentArray.length;
@@ -598,17 +594,16 @@ function getPathSamplePoints(pathCollection)
     for (i = 0; i < segCount; i++) {
         latStart = segmentArray[i].fromLonLat.lat;
         lonStart = segmentArray[i].fromLonLat.lon;
-        latEnd   = segmentArray[i].toLonLat.lat;
-        lonEnd   = segmentArray[i].toLonLat.lon;
+        latEnd = segmentArray[i].toLonLat.lat;
+        lonEnd = segmentArray[i].toLonLat.lon;
 
         // naive non-geodetic curve:
-        var dx = (lonEnd - lonStart)*(singleSegment/pathCollection.totalLength);
-        var dy = (latEnd - latStart)*(singleSegment/pathCollection.totalLength);
+        var dx = (lonEnd - lonStart) * (singleSegment / pathCollection.totalLength);
+        var dy = (latEnd - latStart) * (singleSegment / pathCollection.totalLength);
 
-        pointsInSegment = Math.floor(segmentArray[i].segmentLength/singleSegment);
+        pointsInSegment = Math.floor(segmentArray[i].segmentLength / singleSegment);
         var currentLonLat = new OpenLayers.LonLat(lonStart, latStart);
-        for (i = 0; i < pointsInSegment; i++)
-        {
+        for (i = 0; i < pointsInSegment; i++) {
             pathArray.push(currentLonLat.lat);
             pathArray.push(currentLonLat.lon);
             currentLonLat = currentLonLat.add(dx, dy);
@@ -628,8 +623,8 @@ function getPathSamplePoints(pathCollection)
  * -    pathCollection:     Path segments from the user
  * -    callback:           Callback function of the original caller
  */
-function mapquestRequest(pathCollection, callback)
-{
+
+function mapquestRequest(pathCollection, callback) {
     var mapquestURL = 'http://open.mapquestapi.com';
     var urlreq = mapquestURL + '/elevation/v1/getElevationProfile?callback=mapquestResponse&useFilter=true&shapeFormat=cmp&inShapeFormat=cmp&outShapeFormat=cmp';
     var pathArray = getPathSamplePoints(pathCollection);
@@ -650,12 +645,12 @@ function mapquestRequest(pathCollection, callback)
  * parameters:
  * -    response:       Data provided by MapQuest (see MapQuest API docu)
  */
-function mapquestResponse(response)
-{
+
+function mapquestResponse(response) {
     var i;
     if (response.info.statuscode != 0) {
         var errstr = "";
-        for (i = 0; i<response.info.messages.length; i++) {
+        for (i = 0; i < response.info.messages.length; i++) {
             errstr += response.info.messages[i] + "\n";
         };
         console.log(errstr);
@@ -667,37 +662,40 @@ function mapquestResponse(response)
     var html = '';
     // path[i].height;
     // path[i].distance;
-
     var cIndex;
     var segmentArray = g_mapquest_pathcollection.segmentArray;
     var returnArray = new Array(path.length);
     // the returnArray is filled with the height data
     for (i = 0; i < path.length; i++) {
-        returnArray[i] = { lat        : points[(i*2)],   // lat
-                           lon        : points[(i*2)+1], // lon
-                           elevation  : path[i].height,  // height
-                           breakPoint : null };
+        returnArray[i] = {
+            lat: points[(i * 2)],
+            // lat
+            lon: points[(i * 2) + 1],
+            // lon
+            elevation: path[i].height,
+            // height
+            breakPoint: null
+        };
     }
     // now we set the breakPoint attribute for positions
     // where the path is changing its direction.
     // this can be used by the chart functions to add additional
     // informations to the chart.
     for (i = 0; i < segmentArray.length; i++) {
-        cIndex = (returnArray.length-1)*segmentArray[i].cumulativeLength /
-            g_mapquest_pathcollection.totalLength; // position in the path from 0..1
+        cIndex = (returnArray.length - 1) * segmentArray[i].cumulativeLength / g_mapquest_pathcollection.totalLength; // position in the path from 0..1
         cIndex = Math.round(cIndex); // we need an integer for the array index
-
-        returnArray[cIndex].breakPoint = { azimuth         : segmentArray[i].azimuth,
-                                           directionString : segmentArray[i].directionString,
-                                           index           : i // segment index
-                                         };
+        returnArray[cIndex].breakPoint = {
+            azimuth: segmentArray[i].azimuth,
+            directionString: segmentArray[i].directionString,
+            index: i // segment index
+        };
     }
     // set the breakpoint attribute of the last point,
     // but do net set azimuth or directionString, as they make no sense here
-    returnArray[returnArray.length-1].breakPoint = {
-        azimuth         : 0,
-        directionString : "",
-        index           : i
+    returnArray[returnArray.length - 1].breakPoint = {
+        azimuth: 0,
+        directionString: "",
+        index: i
     };
     g_mapquest_callback(returnArray);
 }
@@ -707,18 +705,23 @@ function mapquestResponse(response)
  * description: MapQuest decompression for coordinates.
  * See: http://open.mapquestapi.com/common/encodedecode.html
  */
-function decompress(encoded, precision)
-{
+
+function decompress(encoded, precision) {
     precision = Math.pow(10, -precision);
-    var len = encoded.length, index=0, lat=0, lng = 0, array = [];
+    var len = encoded.length,
+        index = 0,
+        lat = 0,
+        lng = 0,
+        array = [];
     while (index < len) {
-        var b, shift = 0, result = 0;
+        var b, shift = 0,
+            result = 0;
         do {
             b = encoded.charCodeAt(index++) - 63;
             result |= (b & 0x1f) << shift;
             shift += 5;
         } while (b >= 0x20);
-        var dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        var dlat = ((result & 1) ? ~ (result >> 1) : (result >> 1));
         lat += dlat;
         shift = 0;
         result = 0;
@@ -727,7 +730,7 @@ function decompress(encoded, precision)
             result |= (b & 0x1f) << shift;
             shift += 5;
         } while (b >= 0x20);
-        var dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        var dlng = ((result & 1) ? ~ (result >> 1) : (result >> 1));
         lng += dlng;
         array.push(lat * precision);
         array.push(lng * precision);
@@ -740,24 +743,27 @@ function decompress(encoded, precision)
  * description: MapQuest compression for coordinates.
  * See: http://open.mapquestapi.com/common/encodedecode.html
  */
-function compress(points, precision)
-{
-   var oldLat = 0, oldLng = 0, len = points.length, index = 0;
-   var encoded = '';
-   precision = Math.pow(10, precision);
-   while (index < len) {
-      //  Round to N decimal places
-      var lat = Math.round(points[index++] * precision);
-      var lng = Math.round(points[index++] * precision);
 
-      //  Encode the differences between the points
-      encoded += encodeNumber(lat - oldLat);
-      encoded += encodeNumber(lng - oldLng);
+function compress(points, precision) {
+    var oldLat = 0,
+        oldLng = 0,
+        len = points.length,
+        index = 0;
+    var encoded = '';
+    precision = Math.pow(10, precision);
+    while (index < len) {
+        //  Round to N decimal places
+        var lat = Math.round(points[index++] * precision);
+        var lng = Math.round(points[index++] * precision);
 
-      oldLat = lat;
-      oldLng = lng;
-   }
-   return encoded;
+        //  Encode the differences between the points
+        encoded += encodeNumber(lat - oldLat);
+        encoded += encodeNumber(lng - oldLng);
+
+        oldLat = lat;
+        oldLng = lng;
+    }
+    return encoded;
 }
 
 /**
@@ -765,11 +771,11 @@ function compress(points, precision)
  * description: MapQuest compression for coordinates.
  * See: http://open.mapquestapi.com/common/encodedecode.html
  */
-function encodeNumber(num)
-{
+
+function encodeNumber(num) {
     var num = num << 1;
     if (num < 0) {
-        num = ~(num);
+        num = ~ (num);
     }
     var encoded = '';
     while (num >= 0x20) {
@@ -800,8 +806,8 @@ function encodeNumber(num)
  * return:  String: String from azimuth:  "N", "NE", "E", "SE", "S", "SW", "W",
  * "NW", "N"
  */
-function directionString(latStart, lonStart, latEnd, lonEnd)
-{
+
+function directionString(latStart, lonStart, latEnd, lonEnd) {
     var azimuth = azimuthApprox(latStart, lonStart, latEnd, lonEnd);
     return azimuthStringFromAzimuth(azimuth);
 }
@@ -813,18 +819,10 @@ function directionString(latStart, lonStart, latEnd, lonEnd)
  * -    azimuth:    azimuth [rad]
  * return:  String
  */
-function directionStringFromAzimuth(azimuth)
-{
-    var azStrTable = [ getI18Nstr("north",     "North"),
-                       getI18Nstr("northeast", "North-East"),
-                       getI18Nstr("east",      "East"),
-                       getI18Nstr("southeast", "South-East"),
-                       getI18Nstr("south",     "South"),
-                       getI18Nstr("southwest", "South-West"),
-                       getI18Nstr("west",      "West"),
-                       getI18Nstr("northwest", "North-West"),
-                       getI18Nstr("North",     "North") ];
-    var index = Math.round(8*azimuth/(Math.PI*2));
+
+function directionStringFromAzimuth(azimuth) {
+    var azStrTable = [getI18Nstr("north", "North"), getI18Nstr("northeast", "North-East"), getI18Nstr("east", "East"), getI18Nstr("southeast", "South-East"), getI18Nstr("south", "South"), getI18Nstr("southwest", "South-West"), getI18Nstr("west", "West"), getI18Nstr("northwest", "North-West"), getI18Nstr("North", "North")];
+    var index = Math.round(8 * azimuth / (Math.PI * 2));
     return azStrTable[index];
 }
 
@@ -839,18 +837,17 @@ function directionStringFromAzimuth(azimuth)
  * -    lonEnd:     longitude of end point [rad]
  * return:  Number azimuth: approximated azimuth
  */
-function azimuthApprox(latStart, lonStart, latEnd, lonEnd)
-{
+
+function azimuthApprox(latStart, lonStart, latEnd, lonEnd) {
     // This is basically the "zweite geodätische Hauptaufgabe"
     // A strict solution can be found in:
     // http://www.gia.rwth-aachen.de/Forschung/AngwGeodaesie/geodaetische_linie/artikel1/node7.html
     // RWTH Aachen, Institut für Geodäsie
-
     var dB = latEnd - latStart;
     var dL = lonEnd - lonStart;
     var az = Math.atan2(dL, dB); // this gives us the angle from the north-axis in clockwise order
-    if(az < 0) {
-        az += 2*Math.PI; // we only want positive values
+    if (az < 0) {
+        az += 2 * Math.PI; // we only want positive values
     }
     return az;
 }
@@ -867,113 +864,110 @@ function azimuthApprox(latStart, lonStart, latEnd, lonEnd)
 //declare global variables
 var win;
 var elevationChart;
-var currentStoreData=[];    //current elevation data
-var minElevation;   //minimum elavation on y-axis
-var maxElevation;   //maximum elevation on y-axis
-var totalLength;    //length of path
+var currentStoreData = []; //current elevation data
+var minElevation; //minimum elavation on y-axis
+var maxElevation; //maximum elevation on y-axis
+var totalLength; //length of path
 var currentMaxElevation; //needed to store current maximum elevation. if you change minimum y value, this value is taken as maximum
-var maxVertExag;    //value gets calculated each time window gets resized or redrawn
-
+var maxVertExag; //value gets calculated each time window gets resized or redrawn
 /**
  * function: Ext4.onReady()
  * description: Initiation function for Extjs 4 Sandbox. It gets called when page is ready
  */
-Ext4.onReady( function () {
-
+Ext4.onReady(function () {
+    Ext4.QuickTips.init();
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //+++++++++++++++++++++++++++++++ ExtJS 4 STORES ++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //JsonStore = base data for elevation
-    window.elevationStore=Ext4.create('Ext4.data.JsonStore', {
+    window.elevationStore = Ext4.create('Ext4.data.JsonStore', {
         proxy: {
             type: 'localstorage',
-            id  : 'localStore'
+            id: 'localStore'
         },
-        fields: ['index','elevation','lat', 'lon','markerElevation','direction','markerNo','markerIndex','xAxisLength','displayElevation']
+        fields: ['index', 'elevation', 'lat', 'lon', 'markerElevation', 'direction', 'markerNo', 'markerIndex', 'xAxisLength', 'displayElevation']
     });
 
     //store for vertical Exaggeration combobox
     var vertExagStore = Ext4.create('Ext4.data.Store', {
         fields: ['dispVal', 'value'],
-        autoLoad:true,
-        data : [{
-            "dispVal":"0.25",
-            "value":0.25
-        },{
-            "dispVal":"0.5",
-            "value":0.5
-        },{
-            "dispVal":"1",
-            "value":1
-        },{
-            "dispVal":"2",
-            "value":2
-        },{
-            "dispVal":"2.5",
-            "value":2.5
-        },{
-            "dispVal":"5",
-            "value":5
-        },{
-            "dispVal":"10",
-            "value":10
-        },{
-            "dispVal":"20",
-            "value":20
-        },{
-            "dispVal":"50",
-            "value":50
-        },{
-            "dispVal":"100",
-            "value":100
-        },{
-            "dispVal":"200",
-            "value":200
-        },{
-            "dispVal":"500",
-            "value":500
-        },{
-            "dispVal":"1000",
-            "value":1000
-        },{
-            "dispVal":"2000",
-            "value":2000
-        },{
-            "dispVal":"5000",
-            "value":5000
-        },{
-            "dispVal":"10000",
-            "value":10000
-        }
-        ]
+        autoLoad: true,
+        data: [{
+            "dispVal": "0.25",
+            "value": 0.25
+        }, {
+            "dispVal": "0.5",
+            "value": 0.5
+        }, {
+            "dispVal": "1",
+            "value": 1
+        }, {
+            "dispVal": "2",
+            "value": 2
+        }, {
+            "dispVal": "2.5",
+            "value": 2.5
+        }, {
+            "dispVal": "5",
+            "value": 5
+        }, {
+            "dispVal": "10",
+            "value": 10
+        }, {
+            "dispVal": "20",
+            "value": 20
+        }, {
+            "dispVal": "50",
+            "value": 50
+        }, {
+            "dispVal": "100",
+            "value": 100
+        }, {
+            "dispVal": "200",
+            "value": 200
+        }, {
+            "dispVal": "500",
+            "value": 500
+        }, {
+            "dispVal": "1000",
+            "value": 1000
+        }, {
+            "dispVal": "2000",
+            "value": 2000
+        }, {
+            "dispVal": "5000",
+            "value": 5000
+        }, {
+            "dispVal": "10000",
+            "value": 10000
+        }]
     });
 
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //+++++++++++++++++++++++++++++++ ExtJS 4 Configurations ++++++++++++++++++++++++++++++++++++++
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
     //read-only textfield displays the maximum vertical exaggeration, which can be typed in to display whole data
-    var maxVertExagText= {
-        xtype:'displayfield',
-        id:'maxVertExagText',
+    var maxVertExagText = {
+        xtype: 'displayfield',
+        id: 'maxVertExagText',
         fieldLabel: getI18Nstr("maxexagg", "Max Vertical Exaggeration"),
-        labelAlign:'top',
-        height:50
+        labelAlign: 'top',
+        height: 50
     }
 
     //combobox for vertical exaggeration. User can either choose data or enter new value by hand.
     // The new value should be smaller than maximum vertical exaggeration
-    var comboVertExag= {
-        xtype:'combobox',
-        id:'comboVertExag',
+    var comboVertExag = {
+        xtype: 'combobox',
+        id: 'comboVertExag',
         fieldLabel: getI18Nstr("chooseexagg", "Choose Vertical Exaggeration"),
-        labelAlign:'top',
-        height:55,
+        labelAlign: 'top',
+        height: 55,
         store: vertExagStore,
         queryMode: 'local',
         displayField: 'dispVal',
         valueField: 'value',
-        validator: function(value) {
+        validator: function (value) {
             //input validation for vertExag combobox
             //check if value is a number
             if (isNaN(value)) {
@@ -981,14 +975,13 @@ Ext4.onReady( function () {
                 return getI18Nstr("nan", "Value is not a number");
             }
             //check if value is bigger than 0
-            else if( parseFloat(value)<=0) {
+            else if (parseFloat(value) <= 0) {
                 Ext4.getCmp('applyVertExagButton').setDisabled(true);
                 return getI18Nstr("biggerthan0", "Value must be bigger than 0");
-            }
-            else if (parseFloat(value)<=maxVertExag && parseFloat(value)>0) {
+            } else if (parseFloat(value) <= maxVertExag && parseFloat(value) > 0) {
                 Ext4.getCmp('applyVertExagButton').setDisabled(false);
                 return true;
-            } else if (value=="") {
+            } else if (value == "") {
                 Ext4.getCmp('applyVertExagButton').setDisabled(true);
                 return true;
             }
@@ -1002,26 +995,26 @@ Ext4.onReady( function () {
 
     //combobox for vertical exaggeration. User can either choose data or enter new value by hand.
     // The new value should be smaller than maximum vertical exaggeration
-    var applyVertExagButton= {
-        xtype:'button',
-        id:'applyVertExagButton',
+    var applyVertExagButton = {
+        xtype: 'button',
+        id: 'applyVertExagButton',
         text: getI18Nstr("apply", "Apply"),
-        scale:'medium',
-        handler : function() {
+        scale: 'medium',
+        handler: function () {
             //the new vertical range gets calculated by the entered value. This value gets added to the minimal y-axis value from numberfield
-            var comboValue=parseFloat(Ext4.getCmp('comboVertExag').getValue());
-            var vertRange=parseInt(Ext4.getCmp('yStartValueTxt').getValue())+calcVertRange(comboValue);
+            var comboValue = parseFloat(Ext4.getCmp('comboVertExag').getValue());
+            var vertRange = parseInt(Ext4.getCmp('yStartValueTxt').getValue()) + calcVertRange(comboValue);
             //the chart gets only redrawn, if the new value is bigger than the maximum elevation
-            if(vertRange>maxElevation) {
+            if (vertRange > maxElevation) {
                 //remove chart from container
                 Ext4.getCmp('chartContainer').removeAll();
                 //round vertical range to 50er
-                vertRange=(Math.floor(vertRange/50)*50);
+                vertRange = (Math.floor(vertRange / 50) * 50);
                 createElevationChart(parseInt(Ext4.getCmp('yStartValueTxt').getValue()), vertRange);
                 //filter data, that is smaller than min value from y-axis-value field and display it in chart
                 elevationStore.loadData(filterDataByMinValue(parseInt(Ext4.getCmp('yStartValueTxt').getValue())));
                 Ext4.getCmp('vertExagNumberField').setValue(comboValue);
-                currentMaxElevation=vertRange;
+                currentMaxElevation = vertRange;
             }
         }
     }
@@ -1034,31 +1027,33 @@ Ext4.onReady( function () {
      * -    max:    maximum value as number (highest value from data)
      * return:  configuration for y-value numberfield
      */
-    function createHeightStartValueField(min,max) {
+
+    function createHeightStartValueField(min, max) {
         return {
             xtype: 'numberfield',
             id: 'yStartValueTxt',
             fieldLabel: getI18Nstr("yaxis", "Y-Axis"),
-            labelAlign:'top',
+            labelAlign: 'top',
             value: min,
-            maxValue: max-50, //abstract 50 to always show region of at least 50m
+            maxValue: max - 50,
+            //abstract 50 to always show region of at least 50m
             minValue: min,
-            height:55,
-            disableKeyFilter:true,
+            height: 55,
+            disableKeyFilter: true,
             keyNavEnabled: true,
-            border:false,
-            decimalSeparator:',',
-            decimalPrecision:0,
+            border: false,
+            decimalSeparator: ',',
+            decimalPrecision: 0,
             style: {
                 paddingTop: 10
             },
-            step:50,
-            editable:true,
+            step: 50,
+            editable: true,
             listeners: {
                 change: {
-                    fn: function(obj, newVal, oldVal) {
+                    fn: function (obj, newVal, oldVal) {
                         //only redraw chart when new value between min-max range
-                        if (parseInt(newVal)<=obj.maxValue &&parseInt(newVal)>=obj.minValue){
+                        if (parseInt(newVal) <= obj.maxValue && parseInt(newVal) >= obj.minValue) {
                             Ext4.getCmp('chartContainer').removeAll();
                             //draw new axis with new min-value
                             createElevationChart(parseInt(newVal), currentMaxElevation);
@@ -1078,87 +1073,109 @@ Ext4.onReady( function () {
      * vertical exaggeration as soon as chart gets resized or any input value changes.
      * return:  configuration for vertical exaggeration displayfield
      */
+
     function createVertExagNumberField() {
         return {
             xtype: 'displayfield',
             id: 'vertExagNumberField',
             fieldLabel: getI18Nstr("vertexagg", "Vertical Exaggeration"),
-            labelAlign:'top',
-            height:55,
-            value:1
+            labelAlign: 'top',
+            height: 55,
+            value: 1
         };
     }
 
     //read-only textfield displays the maximum vertical exaggeration, which can be typed in to display whole data
-    var minYAxisText= {
-        xtype:'displayfield',
-        id:'minYAxisText',
+    var minYAxisText = {
+        xtype: 'displayfield',
+        id: 'minYAxisText',
         fieldLabel: getI18Nstr("min", "Min"),
-        labelAlign:'left',
-        labelWidth:35,
-        height:20
+        labelAlign: 'left',
+        labelWidth: 35,
+        height: 20
     }
     //read-only textfield displays the maximum vertical exaggeration, which can be typed in to display whole data
-    var maxYAxisText= {
-        xtype:'displayfield',
-        id:'maxYAxisText',
+    var maxYAxisText = {
+        xtype: 'displayfield',
+        id: 'maxYAxisText',
         fieldLabel: getI18Nstr("max", "Max"),
-        labelAlign:'left',
-        labelWidth:35,
-        height:20
+        labelAlign: 'left',
+        labelWidth: 35,
+        height: 20
     }
     //main control panel holds all controls
-    var northControlPanel= {
-        id:'northControlPanel',
-        xtype:'panel',
-        height:130,
+    var northControlPanel = {
+        id: 'northControlPanel',
+        xtype: 'panel',
+        height: 130,
         bodyStyle: {
             background: '#dfe8f6 '
         },
         border: true,
-        region:'north',
+        region: 'north',
         layout: {
             type: 'vbox',
             align: 'stretch',
             padding: 5
         },
-        items:[createVertExagNumberField(),maxVertExagText]
+        items: [createVertExagNumberField(), maxVertExagText]
     }
 
     //main control panel holds all controls
-    var mainControlPanel= {
-        id:'mainControlPanel',
-        xtype:'container',
-        region:'center',
+    var mainControlPanel = {
+        id: 'mainControlPanel',
+        xtype: 'container',
+        region: 'center',
         layout: {
             type: 'vbox',
             align: 'stretch',
             padding: 5
         },
-        items:[comboVertExag,applyVertExagButton]
+        items: [comboVertExag, applyVertExagButton]
     }
 
 
-    var southControlPanel= {
-        id:'southControlPanel',
-        xtype:'panel',
-        height:60,
+    var southControlPanel = {
+        id: 'southControlPanel',
+        xtype: 'panel',
+        height: 80,
         bodyStyle: {
             background: '#dfe8f6 '
         },
         border: false,
-        region:'south',
+        region: 'south',
         layout: {
             type: 'vbox',
             align: 'stretch',
             padding: 5
         },
-        items: {
-            id:'imgPanel',
-            height:50,
-            xtype:'image',
-            src:'img/mapquest_Logo_Med.png'
-        }
+        items: [{
+            id: 'geomatikImgPanel',
+            height: 30,
+            xtype: 'image',
+            listeners: {
+                render: function (c) {
+                	
+                    Ext4.QuickTips.register({
+                        target: c.el,
+                        dismissDelay:20000,
+                        text: getI18Nstr("aboutText")
+                    });
+                    c.el.on({
+                        'click': function () {
+                            window.open('http://www.hs-karlsruhe.de/fakultaeten/geomatik.html');
+                        }
+                    })
+
+                }
+            },
+            src: 'img/geomatikLogo.png'
+        }, {
+            id: 'mapQuestImgPanel',
+            height: 40,
+            xtype: 'image',
+            src: 'img/mapquest_Logo_Med.png'
+        }]
         //items:[minYAxisText,maxYAxisText]
     }
 
@@ -1171,18 +1188,19 @@ Ext4.onReady( function () {
      * -    min:    minimum value sets min-value of y-axis in chart.
      * -    max:    maximum value sets max-value of y-axis in chart.
      */
-    function createElevationChart(min,max) {
-        elevationChart= {
-            id:'elevationChart',
+
+    function createElevationChart(min, max) {
+        elevationChart = {
+            id: 'elevationChart',
             xtype: 'chart',
             animate: true,
             store: elevationStore,
             listeners: {
                 resize: {
-                    fn: function(obj, newWidth, newSize) {
-                        var vertExag=Math.floor(calcVertExag()*Math.pow(10,2))/Math.pow(10,2);
+                    fn: function (obj, newWidth, newSize) {
+                        var vertExag = Math.floor(calcVertExag() * Math.pow(10, 2)) / Math.pow(10, 2);
                         Ext4.getCmp('vertExagNumberField').setValue(vertExag);
-                        Ext4.getCmp('maxVertExagText').setValue(Math.floor(calcMaxVertExag()*Math.pow(10,2))/Math.pow(10,2));
+                        Ext4.getCmp('maxVertExagText').setValue(Math.floor(calcMaxVertExag() * Math.pow(10, 2)) / Math.pow(10, 2));
                         Ext4.getCmp('comboVertExag').validate();
                         //apply filter to combobox
                         //before applying, clear filter
@@ -1193,8 +1211,8 @@ Ext4.onReady( function () {
                         }
                         ds.clearFilter(true);
                         //filter values smaller than maxVertExag out of combobox
-                        ds.filterBy( function fn(obj) {
-                            if(obj.get('value')<maxVertExag) {
+                        ds.filterBy(function fn(obj) {
+                            if (obj.get('value') < maxVertExag) {
                                 return true;
                             } else {
                                 return false;
@@ -1207,16 +1225,16 @@ Ext4.onReady( function () {
             },
             shadow: false,
             theme: 'Blue',
-            axes: [{//y-axis config
+            axes: [{ //y-axis config
                 type: 'Numeric',
-                id:'yValAxis',
+                id: 'yValAxis',
                 xtype: 'Axis',
                 minimum: min,
                 maximum: max,
-                adjustMinimumByMajorUnit:false,
-                decimals:0,
+                adjustMinimumByMajorUnit: false,
+                decimals: 0,
                 position: 'left',
-                majorTickSteps:9,
+                majorTickSteps: 9,
                 fields: ['elevation'],
                 title: getI18Nstr("heightinm", "Height [m]"),
                 grid: {
@@ -1227,23 +1245,22 @@ Ext4.onReady( function () {
                         'stroke-width': 0.5
                     }
                 }
-            }
-            ,{//x-axis config
+            }, { //x-axis config
                 type: 'Numeric',
                 position: 'bottom',
                 maximum: totalLength,
                 fields: ['xAxisLength'],
-                decimals:1,
+                decimals: 1,
                 title: getI18Nstr("pathinkm", "Path [km]"),
-            }
-            ],
-            series: [{//chart data
-                type: 'area',//elevation data as area series
-                highlight:true,
+            }],
+            series: [{ //chart data
+                type: 'area',
+                //elevation data as area series
+                highlight: true,
                 axis: 'left',
-                grid:true,
+                grid: true,
                 smooth: false,
-                field:'index',
+                field: 'index',
                 style: {
                     opacity: 0.7
                 },
@@ -1253,25 +1270,25 @@ Ext4.onReady( function () {
                     trackMouse: true,
                     width: 165,
                     height: 50,
-                    renderer: function(storeItem, item) {
+                    renderer: function (storeItem, item) {
                         //cut digits
-                        var elevation=Math.floor(storeItem.get('displayElevation'));
+                        var elevation = Math.floor(storeItem.get('displayElevation'));
                         //set number of digits for coordinates
-                        var digits=7;
-                        var lat=storeItem.get('lat');
-                        var lon=storeItem.get('lon');
+                        var digits = 7;
+                        var lat = storeItem.get('lat');
+                        var lon = storeItem.get('lon');
                         // show marker on map
                         setMoveableMarker(lat, lon);
                         //set digit number, convert to string and replace "." with ","
-                        lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
-                        lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
+                        lat = (Math.floor(lat * Math.pow(10, digits)) / Math.pow(10, digits) + '').replace(".", getI18Nstr("numsep", "."));
+                        lon = (Math.floor(lon * Math.pow(10, digits)) / Math.pow(10, digits) + '').replace(".", getI18Nstr("numsep", "."));
                         //tooltip text
-                        this.setTitle(getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': '+ lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': '+ lon);
+                        this.setTitle(getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': ' + lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': ' + lon);
                     }
                 },
-            },{//display marker on map as points at top of chart area
+            }, { //display marker on map as points at top of chart area
                 type: 'scatter',
-                highlight:false,
+                highlight: false,
                 axis: 'left',
                 markerConfig: {
                     type: 'circle',
@@ -1285,7 +1302,8 @@ Ext4.onReady( function () {
                     renderer: function (n) {
                         //show marker Char
                         //convert via ascii code to char
-                        return String.fromCharCode(n+65)/*+': ' + elevationStore.findRecord('markerIndex',n+1).get('direction')*/;
+                        return String.fromCharCode(n + 65) /*+': ' + elevationStore.findRecord('markerIndex',n+1).get('direction')*/
+                        ;
                     },
                     'text-anchor': 'middle',
                     contrast: false
@@ -1295,27 +1313,27 @@ Ext4.onReady( function () {
                 yField: 'markerElevation',
                 tips: {
                     trackMouse: false,
-                    autoScroll:true,
+                    autoScroll: true,
                     width: 170,
                     height: 60,
-                    renderer: function(storeItem, item) {
+                    renderer: function (storeItem, item) {
                         //cut digits
-                        var elevation=Math.floor(storeItem.get('displayElevation'));
+                        var elevation = Math.floor(storeItem.get('displayElevation'));
                         //set number of digits for coordinates
-                        var digits=7;
-                        var lat=storeItem.get('lat');
-                        var lon=storeItem.get('lon');
+                        var digits = 7;
+                        var lat = storeItem.get('lat');
+                        var lon = storeItem.get('lon');
                         // show marker on map
                         setMoveableMarker(lat, lon);
                         //set digit number, convert to string and replace "." with ","
-                        lat=(Math.floor(lat*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
-                        lon=(Math.floor(lon*Math.pow(10,digits))/Math.pow(10,digits)+'').replace(".",getI18Nstr("numsep", "."));
+                        lat = (Math.floor(lat * Math.pow(10, digits)) / Math.pow(10, digits) + '').replace(".", getI18Nstr("numsep", "."));
+                        lon = (Math.floor(lon * Math.pow(10, digits)) / Math.pow(10, digits) + '').replace(".", getI18Nstr("numsep", "."));
                         //tooltip text
                         //do not display direction for last marker point
-                        if (storeItem.get('direction')!="") {
-                            this.setTitle(getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': '+ lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': '+ lon  +'<br>' + getI18Nstr("dir", "Direction") + ': '+ storeItem.get('direction') );
+                        if (storeItem.get('direction') != "") {
+                            this.setTitle(getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': ' + lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': ' + lon + '<br>' + getI18Nstr("dir", "Direction") + ': ' + storeItem.get('direction'));
                         } else {
-                            this.setTitle(getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': '+ lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': '+ lon+'<br>   <br>' );
+                            this.setTitle(getI18Nstr("height", "Height") + ': ' + elevation + ' m <br> ' + getI18Nstr("lat", "Latitude") + ': ' + lat + '<br> ' + getI18Nstr("lon", "Longitude") + ': ' + lon + '<br>   <br>');
                         }
                     }
                 }
@@ -1331,14 +1349,14 @@ Ext4.onReady( function () {
      */
     window.createProfileWindow = function () {
         // detect lowest value from data and save it in 'minElevation'
-        minElevation=Math.floor(elevationStore.min('elevation'));
+        minElevation = Math.floor(elevationStore.min('elevation'));
         //round minimum value to 50er
-        minElevation=(Math.floor(minElevation/50)*50);
+        minElevation = (Math.floor(minElevation / 50) * 50);
         //detect highest value from data
-        maxElevation=Math.floor(elevationStore.max('elevation'));
+        maxElevation = Math.floor(elevationStore.max('elevation'));
         //round maximum value to next higher hundreder and add 100
-        maxElevation=(Math.floor(maxElevation/50)*50)+50;
-        currentMaxElevation=maxElevation;
+        maxElevation = (Math.floor(maxElevation / 50) * 50) + 50;
+        currentMaxElevation = maxElevation;
         //create window component
         win = Ext4.createWidget('window', {
             id: 'chartWindow',
@@ -1351,23 +1369,22 @@ Ext4.onReady( function () {
             title: getI18Nstr("heightprofile", "Height Profile"),
             renderTo: Ext4.getBody(),
             layout: 'fit',
-            items:[{
-                xtype:'panel',
+            items: [{
+                xtype: 'panel',
                 style: 'border: 1px solid #666',
                 layout: {
                     type: 'hbox',
                     align: 'stretch'
                 },
-                items:[{
+                items: [{
                     xtype: 'panel',
                     flex: 1,
-                    border:true,
-                    height:100,
-                    minWidth:100,
+                    border: true,
+                    height: 100,
+                    minWidth: 100,
                     layout: 'border',
-                    items:[northControlPanel,mainControlPanel,southControlPanel]
-                }
-                ,{
+                    items: [northControlPanel, mainControlPanel, southControlPanel]
+                }, {
                     xtype: 'container',
                     id: 'chartContainer',
                     flex: 8,
@@ -1376,30 +1393,29 @@ Ext4.onReady( function () {
                     layout: {
                         type: 'fit'
                     },
-                    items:[]//leave item empty, because it gets generated and added through createElevationChart()-function
+                    items: [] //leave item empty, because it gets generated and added through createElevationChart()-function
                 }]
-            }   ]
+            }]
 
         });
         //remove imagePanel if heightprovider not mapquest
-        if(heightProvider!='mapquest'){
-            Ext4.getCmp('southControlPanel').setVisible(false);
+        if (heightProvider != 'mapquest') {
+            Ext4.getCmp('southControlPanel').remove('mapQuestImgPanel');
+            //Ext4.getCmp('southControlPanel').setVisible(false);
         }
         //add min y-value-axis numberfield
-        Ext4.getCmp('mainControlPanel').add(createHeightStartValueField(minElevation,maxElevation));
+        Ext4.getCmp('mainControlPanel').add(createHeightStartValueField(minElevation, maxElevation));
         //add chart to main panel
-        createElevationChart(minElevation,maxElevation);
+        createElevationChart(minElevation, maxElevation);
         //calculate current vertical exaggeration and set value to textfields, rounded to 2 digits
-        var vertExag=Math.floor(calcVertExag()*Math.pow(10,2))/Math.pow(10,2);
+        var vertExag = Math.floor(calcVertExag() * Math.pow(10, 2)) / Math.pow(10, 2);
         Ext4.getCmp('vertExagNumberField').setValue(vertExag);
         //Ext4.getCmp('minYAxisText').setValue(minElevation);
         //Ext4.getCmp('maxYAxisText').setValue(maxElevation-50);
-
     }
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //+++++++++++++++++++++++++++++++ ExtJS 4 FUNCTIONS +++++++++++++++++++++++++++++++++++++++++++
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
     /**
      * function: closeProfileWindow()
      * description: Function closes profile window
@@ -1421,32 +1437,33 @@ Ext4.onReady( function () {
     window.generateElevationDataFromResults = function (results, totalLength) {
         var data = [];
         //calculate length bewtween two elevation points
-        var gapLength=totalLength/results.length;
-        var totalGapLength=0;
+        var gapLength = totalLength / results.length;
+        var totalGapLength = 0;
         //get max Elevation for marker label placement in chart
-        maxElevation=results[0].elevation;
+        maxElevation = results[0].elevation;
         for (var i = 1; i < results.length; i++) {
-            if (results[i].elevation>=maxElevation) {
-                maxElevation=results[i].elevation;
+            if (results[i].elevation >= maxElevation) {
+                maxElevation = results[i].elevation;
             }
         }
         //round it to a 50er value and add offset. Marker labels must be always visible
-        maxElevation=(Math.floor(maxElevation/50)*50)+47;
+        maxElevation = (Math.floor(maxElevation / 50) * 50) + 47;
         //loop throug elevation array and push data to elevation store
         for (var i = 0; i < results.length; i++) {
             //check if elevation point is marker
             if (results[i].breakPoint) {
                 data.push({
                     index: i,
-                    elevation: results[i].elevation,//elevation can be changed through filter, this is why displayElevation is needed to be shown in tooltip
+                    elevation: results[i].elevation,
+                    //elevation can be changed through filter, this is why displayElevation is needed to be shown in tooltip
                     displayElevation: results[i].elevation,
                     lat: results[i].lat,
                     lon: results[i].lon,
-                    markerElevation:maxElevation,
+                    markerElevation: maxElevation,
                     direction: results[i].breakPoint.directionString,
-                    markerNo: String.fromCharCode(results[i].breakPoint.index+65),
+                    markerNo: String.fromCharCode(results[i].breakPoint.index + 65),
                     markerIndex: results[i].breakPoint.index,
-                    xAxisLength:totalGapLength
+                    xAxisLength: totalGapLength
                 });
             } else {
                 data.push({
@@ -1455,14 +1472,14 @@ Ext4.onReady( function () {
                     displayElevation: results[i].elevation,
                     lat: results[i].lat,
                     lon: results[i].lon,
-                    xAxisLength:totalGapLength
+                    xAxisLength: totalGapLength
                 });
             }
             //add length between two points to length (needed for labelling x-axis)
-            totalGapLength+=gapLength;
+            totalGapLength += gapLength;
         }
         //save current data to global array
-        currentStoreData=cloneArray(data);
+        currentStoreData = cloneArray(data);
         return data;
     };
     /**
@@ -1490,7 +1507,7 @@ Ext4.onReady( function () {
      *                              cumulativeLength (km)
      */
     window.drawChart = function (elevationArray, pathCollection) {
-        totalLength=pathCollection.totalLength;
+        totalLength = pathCollection.totalLength;
         elevationStore.loadData(generateElevationDataFromResults(elevationArray, totalLength));
     }
     /**
@@ -1502,11 +1519,12 @@ Ext4.onReady( function () {
      * -    min:    minimum value from starting y-value-numberfield.
      * return:  Array retData: Array with updated elevations
      * */
+
     function filterDataByMinValue(min) {
-        var retData=cloneArray(currentStoreData);
+        var retData = cloneArray(currentStoreData);
         for (var i = 0; i < retData.length; i++) {
-            if(retData[i].elevation<=min) {
-                retData[i].elevation=min;
+            if (retData[i].elevation <= min) {
+                retData[i].elevation = min;
             }
         }
         return retData;
@@ -1520,19 +1538,20 @@ Ext4.onReady( function () {
      * -    vertExag:    vertical exaggeration as float from vertical exaggeration combobox.
      * return:  number range: new vertical range
      * */
+
     function calcVertRange(vertExag) {
         //get max value from x-axis
-        var maxHor=Ext4.getCmp('elevationChart').axes.items[1].to;
-        maxHor=Math.floor(maxHor*Math.pow(10,1))/Math.pow(10,1)
+        var maxHor = Ext4.getCmp('elevationChart').axes.items[1].to;
+        maxHor = Math.floor(maxHor * Math.pow(10, 1)) / Math.pow(10, 1)
         //calculate width of x-axis in pixels by abstractin constant pixel value from chart-width(=width of whole chart area)
-        var chartWidth=Ext4.getCmp('elevationChart').getWidth()-90;
+        var chartWidth = Ext4.getCmp('elevationChart').getWidth() - 90;
         //calculate horizontal scale
-        var horScale=maxHor/chartWidth;
+        var horScale = maxHor / chartWidth;
         //calculate height of y-axis in pixels by abstractin constant pixel value from chart-height(=height of whole chart area)
-        var chartHeight=Ext4.getCmp('elevationChart').getHeight()-74;
-        var range=horScale*(chartHeight/vertExag);
+        var chartHeight = Ext4.getCmp('elevationChart').getHeight() - 74;
+        var range = horScale * (chartHeight / vertExag);
         //multiplicate by 1000, because unit of x-axis=km and unit of y-axis=m
-        return range*1000;
+        return range * 1000;
     }
 
     /**
@@ -1540,21 +1559,22 @@ Ext4.onReady( function () {
      * description: Function calculates current vertical exaggeration by using range of elevation chart
      * return:  number vertExag: current vertical exaggeration
      * */
+
     function calcVertExag() {
         //get max value from x-axis
-        var maxHor=Ext4.getCmp('elevationChart').axes.items[1].to;
-        maxHor=Math.floor(maxHor*Math.pow(10,1))/Math.pow(10,1)
+        var maxHor = Ext4.getCmp('elevationChart').axes.items[1].to;
+        maxHor = Math.floor(maxHor * Math.pow(10, 1)) / Math.pow(10, 1)
         //calculate width of x-axis in pixels by abstractin constant pixel value from chart-width(=width of whole chart area)
-        var chartWidth=Ext4.getCmp('elevationChart').getWidth()-90;
+        var chartWidth = Ext4.getCmp('elevationChart').getWidth() - 90;
         //calculate horizontal scale
-        var horScale=maxHor/chartWidth;
+        var horScale = maxHor / chartWidth;
         //calculate height of y-axis in pixels by abstractin constant pixel value from chart-height(=height of whole chart area)
-        var chartHeight=Ext4.getCmp('elevationChart').getHeight()-74;
+        var chartHeight = Ext4.getCmp('elevationChart').getHeight() - 74;
         //get current range by abstracting y-axis min value from y-axis max value
-        var range=Ext4.getCmp('elevationChart').axes.items[0].to-Ext4.getCmp('elevationChart').axes.items[0].from;
+        var range = Ext4.getCmp('elevationChart').axes.items[0].to - Ext4.getCmp('elevationChart').axes.items[0].from;
         //caluclate vertical scale
-        var vertScale=range*0.001/chartHeight;
-        var vertExag= horScale/vertScale;
+        var vertScale = range * 0.001 / chartHeight;
+        var vertExag = horScale / vertScale;
         return vertExag;
     }
 
@@ -1564,22 +1584,23 @@ Ext4.onReady( function () {
      *              and min value from y-axis-start-numberfield as range
      * * return:  number vertExag: maximal vertical exaggeration
      * */
+
     function calcMaxVertExag() {
         //get max value from x-axis
-        var maxHor=Ext4.getCmp('elevationChart').axes.items[1].to;
-        maxHor=Math.floor(maxHor*Math.pow(10,1))/Math.pow(10,1)
+        var maxHor = Ext4.getCmp('elevationChart').axes.items[1].to;
+        maxHor = Math.floor(maxHor * Math.pow(10, 1)) / Math.pow(10, 1)
         //calculate width of x-axis in pixels by abstractin constant pixel value from chart-width(=width of whole chart area)
-        var chartWidth=Ext4.getCmp('elevationChart').getWidth()-90;
+        var chartWidth = Ext4.getCmp('elevationChart').getWidth() - 90;
         //calculate horizontal scale
-        var horScale=maxHor/chartWidth;
+        var horScale = maxHor / chartWidth;
         //calculate height of y-axis in pixels by abstractin constant pixel value from chart-height(=height of whole chart area)
-        var chartHeight=Ext4.getCmp('elevationChart').getHeight()-74;
+        var chartHeight = Ext4.getCmp('elevationChart').getHeight() - 74;
         //calculate range by using max value from data and value from y-axis-start-numberfield
-        var range=maxElevation-parseInt(Ext4.getCmp('yStartValueTxt').getValue());
+        var range = maxElevation - parseInt(Ext4.getCmp('yStartValueTxt').getValue());
         //caluclate vertical scale
-        var vertScale=range*0.001/chartHeight;
-        var vertExag= horScale/vertScale;
-        maxVertExag=vertExag;
+        var vertScale = range * 0.001 / chartHeight;
+        var vertExag = horScale / vertScale;
+        maxVertExag = vertExag;
         return vertExag;
     }
 
@@ -1591,15 +1612,14 @@ Ext4.onReady( function () {
  * -    soureArr:    source-array
  * return:  Array clonedArr: copy of array
  * */
+
 function cloneArray(soureArr) {
     var clonedArr = (soureArr instanceof Array) ? [] : {};
     for (i in soureArr) {
-        if (i == 'clone')
-            continue;
+        if (i == 'clone') continue;
         if (soureArr[i] && typeof soureArr[i] == "object") {
             clonedArr[i] = cloneArray(soureArr[i]);
-        } else
-            clonedArr[i] = soureArr[i]
+        } else clonedArr[i] = soureArr[i]
     }
     return clonedArr;
 };
@@ -1608,4 +1628,3 @@ function cloneArray(soureArr) {
  *************************  end profilechart.js functions ***************************
  ************************************************************************************
  */
-
