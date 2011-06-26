@@ -52,7 +52,7 @@ Ext.onReady( function() {
 	//pass map and heightprovider("google" or "mapquest")
 	var elevationProfileTool = new GeoExt.ux.ElevationProfileTool({
 		map:map,
-		heightProvider:'google'
+		heightProvider:'mapquest'
 
 	});
 	mapPanel.getTopToolbar().add(elevationProfileTool);

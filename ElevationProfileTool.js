@@ -111,6 +111,9 @@ GeoExt.ux.ElevationProfileTool = Ext.extend(Ext.Button, {
             "default": style
         });
 
+        var maxVertices = 26;
+        if(heightProvider == "mapquest")
+            maxVertices = 2;
         // add profile tool to the map panel
         this.profileControl = new OpenLayers.Control.Measure(OpenLayers.Handler.Path, {
             eventListeners: {
@@ -123,7 +126,7 @@ GeoExt.ux.ElevationProfileTool = Ext.extend(Ext.Button, {
             },
             persist: false,
             handlerOptions: {
-                maxVertices    : 26, // we are running out of characters after 26
+                maxVertices    : maxVertices, // we are running out of characters after 26
                 freehandToggle : '',
                 layerOptions   : {
                     styleMap: styleMap
