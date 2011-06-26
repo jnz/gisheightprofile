@@ -10,6 +10,9 @@
  *  class = ElevationProfileTool
  *  base_link = `Ext.Button <http://dev.sencha.com/deploy/dev/docs/?class=Ext.Button>`_
  */
+
+var PROFILE_DIR_PREFIX = "";
+
 Ext.namespace("GeoExt.ux");
 
 //variable holds map object
@@ -203,26 +206,6 @@ function onProfilePathComplete(evt) {
         addMarkerToMap(to.x, to.y, i);
     }
 
-    // now you can use segmentArray to update the graph
-    // total length:
-    // console.log('Profile line on map:');
-    // console.log('Total length [km]: ' + totalLength);
-    // console.log('Line segments: ' + String(pointCount-1));
-    // for (i = 0; i < segmentArray.length; i++) {
-    //     console.log('Segment:');
-    //     console.log('  From [WGS84, deg]: ' +
-    //                    segmentArray[i].fromLonLat.lon +
-    //                    ' ' +
-    //                    segmentArray[i].fromLonLat.lat);
-    //     console.log('  To [WGS84, deg]: ' +
-    //                    segmentArray[i].toLonLat.lon +
-    //                    ' ' +
-    //                    segmentArray[i].toLonLat.lat);
-    //     console.log('  Segment length [km]: ' + segmentArray[i].segmentLength);
-    //     console.log('  Azimuth [deg]: ' + segmentArray[i].azimuth*180/Math.PI);
-    //     console.log('  Direction: ' + segmentArray[i].directionString);
-    // }
-    // console.log('');
     var pathCollection = {
         segmentArray: segmentArray,
         totalLength: totalLength
@@ -1155,7 +1138,7 @@ Ext4.onReady(function () {
             xtype: 'image',
             listeners: {
                 render: function (c) {
-                	
+                    
                     Ext4.QuickTips.register({
                         target: c.el,
                         dismissDelay:20000,
@@ -1169,12 +1152,12 @@ Ext4.onReady(function () {
 
                 }
             },
-            src: 'img/geomatikLogo.png'
+            src: PROFILE_DIR_PREFIX + 'img/geomatikLogo.png'
         }, {
             id: 'mapQuestImgPanel',
             height: 40,
             xtype: 'image',
-            src: 'img/mapquest_Logo_Med.png'
+            src: PROFILE_DIR_PREFIX + 'img/mapquest_Logo_Med.png'
         }]
         //items:[minYAxisText,maxYAxisText]
     }
