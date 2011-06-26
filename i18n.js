@@ -189,6 +189,7 @@ var g_i18n_fr =
     "nan"            : "Value is not a number",
     "biggerthan0"    : "Value must be bigger than 0",
     "biggerthanmax"  : "Value is bigger than max vertical exaggeration",
+    "aboutText"    	 : "This tool was created by students from the Geomatics Master course of the Hochschule Karlsruhe. Click on the image to get more information about Geomatics.",
 };
 
 

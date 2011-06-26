@@ -1138,7 +1138,6 @@ Ext4.onReady(function () {
             xtype: 'image',
             listeners: {
                 render: function (c) {
-                    
                     Ext4.QuickTips.register({
                         target: c.el,
                         dismissDelay:20000,
@@ -1148,7 +1147,7 @@ Ext4.onReady(function () {
                         'click': function () {
                             window.open('http://www.hs-karlsruhe.de/fakultaeten/geomatik.html');
                         }
-                    })
+                    });
 
                 }
             },
